@@ -1,0 +1,44 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [ development ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Development Server
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.DEV_HOST }}
+        username: ${{ secrets.DEV_USERNAME }}
+        key: ${{ secrets.DEV_SSH_KEY }}
+        port: ${{ secrets.DEV_PORT }}
+        script: |
+          cd /var/www/the360learning-development
+          git pull origin development
+          source venv/bin/activate
+          pip install -r requirements.txt
+          python manage.py collectstatic --noinput
+          python manage.py migrate
+          sudo systemctl restart the360learning-dev
+          
+    - name: Run Tests
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.DEV_HOST }}
+        username: ${{ secrets.DEV_USERNAME }}
+        key: ${{ secrets.DEV_SSH_KEY }}
+        port: ${{ secrets.DEV_PORT }}
+        script: |
+          cd /var/www/the360learning-development
+          source venv/bin/activate
+          python manage.py test
+          
+    - name: Notify Development Deployment
+      if: success()
+      run: echo "Development deployment completed successfully"
