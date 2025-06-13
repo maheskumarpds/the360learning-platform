@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Zoom Meetings{% endblock %}
+
+{% block extra_css %}
+<style>
+    .meeting-card {
+        transition: transform 0.2s;
+    }
+    .meeting-card:hover {
+        transform: translateY(-5px);
+    }
+    .meeting-status {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0 0.375rem 0 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .meeting-status.upcoming {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    .meeting-status.active {
+        background-color: #e8f0fe;
+        color: #1a73e8;
+    }
+    .meeting-status.ended {
+        background-color: #f5f5f5;
+        color: #616161;
+    }
+    .zoom-connect-card {
+        background-color: #f9fafc;
+        border: 1px dashed #c5cae9;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-video style="color: #2d7d2f;" me-2"></i>Your Zoom Meetings
+        </h2>
+        <div>
+            <a href="{% url 'video_conference_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Schedule New Meeting
+            </a>
+        </div>
+    </div>
+
+    {% if error_message %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error_message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    {% if not has_token %}
+        <div class="zoom-connect-card p-4 mb-4">
+            <div class="text-center py-4">
+                <img src="{% static 'img/zoom-logo.svg' %}" alt="Zoom Logo" style="height: 60px; margin-bottom: 1rem;">
+                <h4 class="mb-3">Connect Your Zoom Account</h4>
+                <p class="text-muted mb-4">
+                    Connect your Zoom account to schedule, manage, and join meetings directly from the the360learning platform.
+                    Your credentials are securely stored and will only be used to create and access your meetings.
+                </p>
+                <a href="{% url 'zoom_oauth_authorize' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plug me-2"></i>Connect to Zoom
+                </a>
+            </div>
+        </div>
+    {% elif not meetings %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-alt text-muted" style="font-size: 3rem;"></i>
+                </div>
+                <h4>No Zoom Meetings Found</h4>
+                <p class="text-muted mb-4">
+                    You don't have any upcoming or recent Zoom meetings.
+                    Schedule a new meeting to get started.
+                </p>
+                <a href="{% url 'video_conference_create' %}" class="btn btn-primary">
+                    <i class="fas fa-calendar-plus me-2"></i>Schedule a Meeting
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            {% for meeting in meetings %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm meeting-card">
+                    <div class="card-body position-relative">
+                        {% if meeting.status == "waiting" %}
+                            <div class="meeting-status upcoming">Upcoming</div>
+                        {% elif meeting.status == "started" %}
+                            <div class="meeting-status active">In Progress</div>
+                        {% else %}
+                            <div class="meeting-status ended">Ended</div>
+                        {% endif %}
+                        
+                        <h5 class="card-title mt-2 mb-3">{{ meeting.topic }}</h5>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-2 style="color: #2d7d2f;""><i class="fas fa-clock"></i></div>
+                                <div>
+                                    <strong>Start Time:</strong><br>
+                                    {{ meeting.start_time|date:"M d, Y" }} at {{ meeting.start_time|time:"g:i A" }}
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-2 style="color: #2d7d2f;""><i class="fas fa-hourglass-half"></i></div>
+                                <div>
+                                    <strong>Duration:</strong> {{ meeting.duration }} minutes
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start mb-2">
+                                <div class="me-2 style="color: #2d7d2f;""><i class="fas fa-info-circle"></i></div>
+                                <div>
+                                    <strong>Meeting ID:</strong><br>
+                                    {{ meeting.id }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if meeting.status == "waiting" or meeting.status == "started" %}
+                        <a href="{{ meeting.join_url }}" target="_blank" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-video me-2"></i>Join Meeting
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{{ meeting.start_url }}" target="_blank" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-cog me-2"></i>Manage in Zoom
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Format meeting times
+    document.addEventListener('DOMContentLoaded', function() {
+        // Could add additional JavaScript for dynamic updates or filtering
+    });
+</script>
+{% endblock %}

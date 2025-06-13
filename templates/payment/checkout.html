@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Registration Payment - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-primary mb-4 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Student Registration Payment</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="mb-3">Welcome to the360learning, {{ user.first_name }}!</h5>
+                        <p>To complete your student registration, a one-time registration fee of <strong>₹{{ fee_amount }}</strong> is required.</p>
+                        <p>This payment will activate your account and provide full access to all learning materials, AI tutoring, and video conferencing features for your class level.</p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Payment Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Name:</div>
+                                <div class="col-md-8">{{ user.get_full_name }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Email:</div>
+                                <div class="col-md-8">{{ user.email }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Class Level:</div>
+                                <div class="col-md-8">{{ profile.get_class_level_display }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Registration Fee:</div>
+                                <div class="col-md-8">₹{{ fee_amount }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ checkout_url }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-credit-card me-2"></i> Proceed to Payment
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Return to Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-lock me-1"></i> Payments are processed securely through Stripe. Your payment information is never stored on our servers.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Automatically redirect to Stripe after 5 seconds
+        setTimeout(function() {
+            window.location.href = "{{ checkout_url }}";
+        }, 5000);
+    });
+</script>
+{% endblock %}

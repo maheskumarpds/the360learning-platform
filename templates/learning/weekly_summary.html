@@ -1,0 +1,401 @@
+{% extends 'base.html' %}
+
+{% block title %}Weekly Learning Summary - the360learning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .summary-header {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        padding: 2rem;
+        color: white;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        margin-bottom: 1.5rem;
+        height: 100%;
+    }
+    
+    .stats-card .card-icon {
+        font-size: 3rem;
+        color: #4e73df;
+        opacity: 0.7;
+    }
+    
+    .stats-card .card-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #5a5c69;
+    }
+    
+    .stats-card .card-label {
+        font-size: 0.875rem;
+        color: #858796;
+        text-transform: uppercase;
+    }
+    
+    .highlight-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .highlight-header {
+        background-color: #f8f9fc;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    
+    .highlight-body {
+        padding: 1.5rem;
+    }
+    
+    .highlight-item {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background-color: #f8f9fc;
+        border-radius: 5px;
+        border-left: 3px solid #4e73df;
+    }
+    
+    .highlight-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .improvement-item {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background-color: #fef8f8;
+        border-radius: 5px;
+        border-left: 3px solid #e74a3b;
+    }
+    
+    .improvement-item .suggestion {
+        font-style: italic;
+        color: #858796;
+        margin-top: 0.25rem;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    .deadline-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background-color: #f8f9fc;
+        border-radius: 5px;
+    }
+    
+    .deadline-date {
+        font-weight: bold;
+        color: #e74a3b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Weekly Learning Summary</h1>
+        <button id="email-summary-btn" class="btn btn-primary">
+            <i class="fas fa-envelope me-2"></i>Email This Summary
+        </button>
+    </div>
+    
+    <div class="summary-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Your Progress Summary</h2>
+            <span class="badge bg-light text-dark">{{ week_start }} - {{ week_end }}</span>
+        </div>
+        <p class="mb-0">Class Level: {{ profile.get_class_level_display }}</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card p-4">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="card-number">{{ stats.materials_viewed }}</div>
+                        <div class="card-label">Materials Viewed</div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card p-4">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="card-number">{{ stats.assignments_completed }}</div>
+                        <div class="card-label">Assignments Completed</div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card p-4">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="card-number">{{ stats.classes_attended }}</div>
+                        <div class="card-label">Classes Attended</div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card p-4">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="card-number">{{ stats.study_hours }}</div>
+                        <div class="card-label">Study Hours</div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Learning Highlights -->
+            <div class="highlight-card mb-4">
+                <div class="highlight-header">
+                    <h3 class="mb-0">Learning Highlights</h3>
+                </div>
+                <div class="highlight-body">
+                    {% if highlights.top_subjects %}
+                    <h4 class="mb-3">Top Subjects</h4>
+                    <div class="chart-container mb-4">
+                        <canvas id="subjectsChart"></canvas>
+                    </div>
+                    {% endif %}
+                    
+                    {% if highlights.recent_achievements %}
+                    <h4 class="mb-3">Recent Achievements</h4>
+                    {% for achievement in highlights.recent_achievements %}
+                    <div class="highlight-item">
+                        <p class="mb-0">{{ achievement }}</p>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p>No recent achievements to display.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Areas for Improvement -->
+            <div class="highlight-card">
+                <div class="highlight-header">
+                    <h3 class="mb-0">Areas for Improvement</h3>
+                </div>
+                <div class="highlight-body">
+                    {% if highlights.improvement_areas %}
+                    {% for area in highlights.improvement_areas %}
+                    <div class="improvement-item">
+                        <p class="mb-0">{{ area.description }}</p>
+                        {% if area.suggestion %}
+                        <p class="suggestion mb-0">{{ area.suggestion }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p>No specific improvement areas identified.</p>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'areas_of_improvement' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-lightbulb me-2"></i>Get Personalized Improvement Tips
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Upcoming Deadlines -->
+            <div class="highlight-card mb-4">
+                <div class="highlight-header">
+                    <h3 class="mb-0">Upcoming Deadlines</h3>
+                </div>
+                <div class="highlight-body">
+                    {% if highlights.upcoming_deadlines %}
+                    {% for deadline in highlights.upcoming_deadlines %}
+                    <div class="deadline-item">
+                        <div>{{ deadline.title }}</div>
+                        <div class="deadline-date">{{ deadline.due_date|date:"M d, h:i A" }}</div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p>No upcoming deadlines this week.</p>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'assignments_list' %}" class="btn btn-outline-primary w-100">
+                            View All Assignments
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Case Study Recommendation -->
+            <div class="highlight-card">
+                <div class="highlight-header">
+                    <h3 class="mb-0">Recommended Practice</h3>
+                </div>
+                <div class="highlight-body">
+                    <p>Try our case-based learning scenarios to apply your knowledge to real-world problems.</p>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'case_study' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-brain me-2"></i>Start Case Study
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart for top subjects
+    if (document.getElementById('subjectsChart')) {
+        const ctx = document.getElementById('subjectsChart').getContext('2d');
+        
+        // Extract data from the template
+        const subjects = [
+            {% for subject in highlights.top_subjects %}
+                '{{ subject.name }}',
+            {% endfor %}
+        ];
+        
+        const hours = [
+            {% for subject in highlights.top_subjects %}
+                {{ subject.hours }},
+            {% endfor %}
+        ];
+        
+        // Create chart
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: subjects,
+                datasets: [{
+                    label: 'Hours Spent',
+                    data: hours,
+                    backgroundColor: [
+                        'rgba(78, 115, 223, 0.8)',
+                        'rgba(28, 200, 138, 0.8)',
+                        'rgba(246, 194, 62, 0.8)',
+                    ],
+                    borderColor: [
+                        'rgba(78, 115, 223, 1)',
+                        'rgba(28, 200, 138, 1)',
+                        'rgba(246, 194, 62, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Hours'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Email summary button
+    document.getElementById('email-summary-btn').addEventListener('click', function() {
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        
+        fetch('{% url "send_weekly_summary_email" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+            } else {
+                alert(data.error || 'An error occurred. Please try again.');
+            }
+            
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-envelope me-2"></i>Email This Summary';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+            
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-envelope me-2"></i>Email This Summary';
+        });
+    });
+    
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

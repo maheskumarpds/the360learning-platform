@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-users-cog me-2"></i>User Management</h2>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Filter and Search -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Filter Users</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select name="role" id="role" class="form-select">
+                        <option value="">All Roles</option>
+                        {% for value, display in role_choices %}
+                        <option value="{{ value }}" {% if role_filter == value %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="class" class="form-label">Class Level</label>
+                    <select name="class" id="class" class="form-select">
+                        <option value="">All Classes</option>
+                        {% for value, display in class_choices %}
+                        <option value="{{ value }}" {% if class_filter == value %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="q" class="form-label">Search</label>
+                    <input type="text" name="q" id="q" class="form-control" value="{{ search_query }}" placeholder="Search by name, username, or email">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Users List -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">User Accounts</h5>
+            <span class="badge bg-primary">{{ page_obj.paginator.count }} Users</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Class</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in page_obj %}
+                        <tr>
+                            <td>{{ profile.user.username }}</td>
+                            <td>{{ profile.user.get_full_name|default:"-" }}</td>
+                            <td>{{ profile.user.email|default:"-" }}</td>
+                            <td>
+                                <span class="badge {% if profile.role == 'admin' %}bg-danger{% elif profile.role == 'teacher' %}bg-success{% else %}bg-info{% endif %}">
+                                    {{ profile.get_role_display }}
+                                </span>
+                            </td>
+                            <td>{{ profile.get_class_level_display|default:"-" }}</td>
+                            <td>
+                                {% if profile.user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'edit_user_access' profile.user.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if profile.user != request.user %}
+                                    <form method="post" action="{% url 'toggle_user_active' profile.user.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm {% if profile.user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" 
+                                                title="{% if profile.user.is_active %}Deactivate{% else %}Activate{% endif %} user">
+                                            <i class="fas {% if profile.user.is_active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-3">No users found matching the criteria.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer">
+            <nav aria-label="User pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if role_filter %}&role={{ role_filter }}{% endif %}{% if class_filter %}&class={{ class_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if class_filter %}&class={{ class_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if class_filter %}&class={{ class_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if class_filter %}&class={{ class_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if class_filter %}&class={{ class_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Guide Section -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>User Management Guide</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <h6 class="mb-2">Roles</h6>
+                    <ul class="mb-3">
+                        <li><strong>Students:</strong> Can access content for their class level</li>
+                        <li><strong>Teachers:</strong> Can create content for their assigned class</li>
+                        <li><strong>Administrators:</strong> Have full access to all features</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-2">Access Controls</h6>
+                    <ul>
+                        <li>Edit a user's role to change their permissions</li>
+                        <li>Change class level to modify content access</li>
+                        <li>Deactivate accounts to temporarily block access</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-2">Best Practices</h6>
+                    <ul>
+                        <li>Regularly audit user accounts and access levels</li>
+                        <li>Assign appropriate class levels to students and teachers</li>
+                        <li>Use the search and filter features to manage large user lists</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

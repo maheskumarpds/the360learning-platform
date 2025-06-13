@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load core_filters %}
+
+{% block title %}Subject Management | the360learning{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Subject Management</li>
+        </ol>
+    </nav>
+
+    <div class="row align-items-center mb-4">
+        <div class="col-lg-6">
+            <h1 class="h2 mb-0">Subject Management</h1>
+            <p class="text-muted">Create and manage subjects available in the system</p>
+        </div>
+        <div class="col-lg-6 text-end">
+            <div class="btn-group">
+                <a href="{% url 'subject_add' %}?next=subject_list" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create New Subject
+                </a>
+                <a href="{% url 'class_subjects_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-link"></i> Manage Class Assignments
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+        <div class="col">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-dark">Available Subjects</h5>
+                    <span class="badge bg-primary rounded-pill">{{ subjects|length }} total</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if subjects %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Description</th>
+                                    <th>Class Assignments</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in subjects %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="subject-icon me-3">
+                                                <i class="fas fa-{{ subject.icon }} fa-2x style="color: #2d7d2f;""></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ subject.name }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ subject.description|truncatechars:100 }}</td>
+                                    <td>
+                                        {% if class_assignments_map|get_item:subject.id %}
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% for assignment in class_assignments_map|get_item:subject.id %}
+                                                <span class="badge bg-light text-dark border">
+                                                    {{ assignment.get_class_level_display }}
+                                                </span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <span class="badge bg-light text-secondary">Not assigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <a href="{% url 'subject_detail' subject.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <a href="{% url 'subject_edit' subject.id %}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            {% if profile.role == 'admin' %}
+                                            <a href="{% url 'subject_delete' subject.id %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-book fa-3x text-muted"></i>
+                        </div>
+                        <h5>No subjects available yet</h5>
+                        <p class="text-muted">Create your first subject to get started</p>
+                        <a href="{% url 'subject_add' %}?next=subject_list" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create First Subject
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

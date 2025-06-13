@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Areas of Improvement - the360learning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .improvement-header {
+        background: linear-gradient(135deg, #e74a3b 0%, #be392b 100%);
+        padding: 2rem;
+        color: white;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .improvement-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .improvement-card-header {
+        background-color: #f8f9fc;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    
+    .improvement-card-body {
+        padding: 1.5rem;
+    }
+    
+    .improvement-item {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #fef8f8;
+        border-radius: 5px;
+        border-left: 4px solid #e74a3b;
+    }
+    
+    .improvement-item .suggestion {
+        font-style: italic;
+        color: #858796;
+        margin-top: 0.5rem;
+    }
+    
+    .topic-search {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .action-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        padding: 1.5rem;
+        height: 100%;
+    }
+    
+    .action-icon {
+        font-size: 2.5rem;
+        color: #4e73df;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="improvement-header">
+        <h1 class="mb-2">Areas of Improvement</h1>
+        <p class="mb-0">Personalized suggestions to enhance your learning experience</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Topic-specific improvement search -->
+            <div class="topic-search mb-4">
+                <h3 class="mb-3">Get Subject-Specific Improvements</h3>
+                <form method="get" action="{% url 'areas_of_improvement' %}">
+                    <div class="row g-2">
+                        <div class="col-md-8">
+                            <select name="topic" class="form-select">
+                                <option value="">Select a subject/topic...</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.name }}" {% if topic == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">Get Suggestions</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Improvement suggestions -->
+            <div class="improvement-card">
+                <div class="improvement-card-header">
+                    <h3 class="mb-0">
+                        {% if topic %}
+                        Improvement Areas for {{ topic }}
+                        {% else %}
+                        General Improvement Areas
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="improvement-card-body">
+                    {% if improvement_areas %}
+                    {% for area in improvement_areas %}
+                    <div class="improvement-item">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-circle text-danger"></i>
+                            </div>
+                            <div>
+                                <p class="mb-1">{{ area.description }}</p>
+                                {% if area.suggestion %}
+                                <p class="suggestion mb-0">
+                                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                                    {{ area.suggestion }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No specific improvement areas identified for you at this time.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Recommended actions -->
+            <h3 class="mb-3">Recommended Actions</h3>
+            
+            <div class="action-card mb-4">
+                <div class="text-center mb-3">
+                    <div class="action-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <h4>Try Case-Based Learning</h4>
+                <p>Apply your knowledge to real-world scenarios to deepen your understanding.</p>
+                <a href="{% url 'case_study' %}" class="btn btn-primary w-100">Start Case Study</a>
+            </div>
+            
+            <div class="action-card mb-4">
+                <div class="text-center mb-3">
+                    <div class="action-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+                <h4>Ask AI Tutor</h4>
+                <p>Get personalized assistance and explanations for challenging concepts.</p>
+                <a href="{% url 'ai_tutor_chat' %}" class="btn btn-primary w-100">Chat with AI Tutor</a>
+            </div>
+            
+            <div class="action-card">
+                <div class="text-center mb-3">
+                    <div class="action-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h4>Review Progress Summary</h4>
+                <p>See your weekly learning statistics and identify patterns.</p>
+                <a href="{% url 'weekly_summary' %}" class="btn btn-primary w-100">View Summary</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

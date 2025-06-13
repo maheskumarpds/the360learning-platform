@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}Quiz Results - {{ quiz.title }} - the360learning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .results-container {
+        position: relative;
+    }
+    .results-container:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 2px;
+        background-color: #dee2e6;
+        transform: translateX(-50%);
+        z-index: -1;
+    }
+    .question-result {
+        border-radius: 8px;
+    }
+    .result-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        border-radius: 8px;
+    }
+    .quiz-score-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+    }
+    .option-label {
+        display: block;
+        padding: 10px 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+    .option-correct {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+    .option-incorrect {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    .option-selected {
+        background-color: #e3f2fd;
+        border-color: #90caf9;
+    }
+    .option-selected.option-incorrect {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-between mb-4">
+        <div class="col-auto">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'quizzes_list' %}">Quizzes</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'quiz_detail' quiz.id %}">{{ quiz.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Results</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-auto">
+            {% if is_owner %}
+            <a href="{% url 'quiz_take' quiz.id %}" class="btn btn-primary">
+                <i class="fas fa-redo me-2"></i>Try Again
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quiz Results Summary -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">Quiz Results: {{ quiz.title }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-4 text-center mb-4 mb-md-0">
+                    <div class="quiz-score-circle 
+                        {% if attempt.score >= 90 %}bg-success text-white{% elif attempt.score >= quiz.passing_score %}bg-warning{% else %}bg-danger text-white{% endif %}">
+                        <div class="display-1 fw-bold">{{ attempt.score }}</div>
+                        <div>out of 100</div>
+                    </div>
+                    <div class="mt-2">
+                        {% if attempt.score >= quiz.passing_score %}
+                        <div class="badge bg-success py-2 px-3 fs-6">
+                            <i class="fas fa-check-circle me-1"></i>Passed
+                        </div>
+                        {% else %}
+                        <div class="badge bg-danger py-2 px-3 fs-6">
+                            <i class="fas fa-times-circle me-1"></i>Failed
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-3">Statistics</h5>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span>Correct Answers:</span>
+                            <span class="badge bg-success text-white">{{ correct_count }}/{{ questions|length }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span>Incorrect Answers:</span>
+                            <span class="badge bg-danger text-white">{{ incorrect_count }}/{{ questions|length }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span>Unanswered:</span>
+                            <span class="badge bg-secondary text-white">{{ unanswered_count }}/{{ questions|length }}</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span>Passing Score:</span>
+                            <span>{{ quiz.passing_score }}%</span>
+                        </div>
+                        {% if time_taken %}
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span>Time Taken:</span>
+                            <span>{{ time_taken|floatformat:1 }} minutes</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <h5 class="mb-3">Performance Summary</h5>
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ correct_count|percentage:questions|floatformat:0 }}%;" aria-valuenow="{{ correct_count|percentage:questions|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">Correct</div>
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ incorrect_count|percentage:questions|floatformat:0 }}%;" aria-valuenow="{{ incorrect_count|percentage:questions|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">Incorrect</div>
+                        <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ unanswered_count|percentage:questions|floatformat:0 }}%;" aria-valuenow="{{ unanswered_count|percentage:questions|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">Unanswered</div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="me-auto">Subject: {{ quiz.subject.name }}</div>
+                        <div>Class: {{ quiz.class_level|class_level_display }}</div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                        <div class="me-auto">Attempt Date: {{ attempt.completed_at|date:"M d, Y" }}</div>
+                        <div>{{ attempt.completed_at|date:"h:i A" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Results -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Detailed Results</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary" id="showAllExplanations">
+                        <i class="fas fa-book-open me-1"></i>Show All Explanations
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="results-container py-3">
+                {% for question in questions %}
+                <div class="question-result mb-4 p-3 border {% if question.id in responses_dict and responses_dict.question.id == question.correct_option %}border-success{% elif question.id in responses_dict %}border-danger{% else %}border-warning{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Question {{ question.question_number }}</h5>
+                        <div>
+                            {% if question.id in responses_dict %}
+                                {% if responses_dict.question.id == question.correct_option %}
+                                <span class="badge bg-success">Correct</span>
+                                {% else %}
+                                <span class="badge bg-danger">Incorrect</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="badge bg-warning">Unanswered</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="question-text mb-3">
+                        {{ question.question_text|linebreaks }}
+                    </div>
+                    
+                    <div class="options-container mb-3">
+                        <div class="option-label {% if question.correct_option == 'a' %}option-correct{% endif %} {% if question.id in responses_dict and responses_dict.question.id == 'a' %}option-selected{% endif %}">
+                            <div class="d-flex">
+                                <div class="me-3 option-letter rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">A</div>
+                                <div>{{ question.option_a }}</div>
+                                {% if question.correct_option == 'a' %}
+                                <div class="ms-auto">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                </div>
+                                {% elif question.id in responses_dict and responses_dict.question.id == 'a' %}
+                                <div class="ms-auto">
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if question.option_b %}
+                        <div class="option-label {% if question.correct_option == 'b' %}option-correct{% endif %} {% if question.id in responses_dict and responses_dict.question.id == 'b' %}option-selected{% endif %}">
+                            <div class="d-flex">
+                                <div class="me-3 option-letter rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">B</div>
+                                <div>{{ question.option_b }}</div>
+                                {% if question.correct_option == 'b' %}
+                                <div class="ms-auto">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                </div>
+                                {% elif question.id in responses_dict and responses_dict.question.id == 'b' %}
+                                <div class="ms-auto">
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if question.option_c %}
+                        <div class="option-label {% if question.correct_option == 'c' %}option-correct{% endif %} {% if question.id in responses_dict and responses_dict.question.id == 'c' %}option-selected{% endif %}">
+                            <div class="d-flex">
+                                <div class="me-3 option-letter rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">C</div>
+                                <div>{{ question.option_c }}</div>
+                                {% if question.correct_option == 'c' %}
+                                <div class="ms-auto">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                </div>
+                                {% elif question.id in responses_dict and responses_dict.question.id == 'c' %}
+                                <div class="ms-auto">
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if question.option_d %}
+                        <div class="option-label {% if question.correct_option == 'd' %}option-correct{% endif %} {% if question.id in responses_dict and responses_dict.question.id == 'd' %}option-selected{% endif %}">
+                            <div class="d-flex">
+                                <div class="me-3 option-letter rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">D</div>
+                                <div>{{ question.option_d }}</div>
+                                {% if question.correct_option == 'd' %}
+                                <div class="ms-auto">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                </div>
+                                {% elif question.id in responses_dict and responses_dict.question.id == 'd' %}
+                                <div class="ms-auto">
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if question.explanation %}
+                    <div class="explanation mt-3 p-3 bg-light d-none">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="fas fa-info-circle style="color: #2d7d2f;""></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Explanation</h6>
+                                <div>{{ question.explanation|linebreaks }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-end">
+                        <button type="button" class="btn btn-sm btn-outline-secondary toggle-explanation">
+                            <i class="fas fa-info-circle me-1"></i>Toggle Explanation
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card-footer bg-light text-center">
+            <div class="btn-group">
+                <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-primary">
+                    <i class="fas fa-clipboard-list me-2"></i>Back to Quiz
+                </a>
+                <a href="{% url 'quizzes_list' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-th-list me-2"></i>All Quizzes
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle explanation visibility
+    const toggleButtons = document.querySelectorAll('.toggle-explanation');
+    toggleButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const explanationDiv = this.parentElement.previousElementSibling;
+            explanationDiv.classList.toggle('d-none');
+            
+            if (explanationDiv.classList.contains('d-none')) {
+                this.innerHTML = '<i class="fas fa-info-circle me-1"></i>Show Explanation';
+            } else {
+                this.innerHTML = '<i class="fas fa-info-circle me-1"></i>Hide Explanation';
+            }
+        });
+    });
+    
+    // Show all explanations
+    const showAllBtn = document.getElementById('showAllExplanations');
+    if (showAllBtn) {
+        showAllBtn.addEventListener('click', function() {
+            const explanationDivs = document.querySelectorAll('.explanation');
+            let allShown = true;
+            
+            explanationDivs.forEach(div => {
+                if (div.classList.contains('d-none')) {
+                    allShown = false;
+                }
+            });
+            
+            explanationDivs.forEach(div => {
+                if (allShown) {
+                    div.classList.add('d-none');
+                    this.innerHTML = '<i class="fas fa-book-open me-1"></i>Show All Explanations';
+                } else {
+                    div.classList.remove('d-none');
+                    this.innerHTML = '<i class="fas fa-book-closed me-1"></i>Hide All Explanations';
+                }
+            });
+            
+            // Update individual toggle buttons
+            toggleButtons.forEach(btn => {
+                if (allShown) {
+                    btn.innerHTML = '<i class="fas fa-info-circle me-1"></i>Show Explanation';
+                } else {
+                    btn.innerHTML = '<i class="fas fa-info-circle me-1"></i>Hide Explanation';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

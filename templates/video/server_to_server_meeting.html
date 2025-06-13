@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}Quick Zoom Meeting Creation - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-video me-2"></i> Quick Zoom Meeting Creation
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <h5><i class="fas fa-info-circle me-2"></i> About this feature:</h5>
+                        <p>This page uses Zoom's Server-to-Server OAuth to create meetings without requiring individual user authentication. This is useful for quick meeting creation by administrators and teachers.</p>
+                        <p class="mb-0"><strong>Important:</strong> You must enter an email address that exists as a user in your Zoom account. The account you're connecting to is determined by the Zoom Account ID in your environment.</p>
+                    </div>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i> {{ error }}
+                    </div>
+                    {% endif %}
+
+                    {% if success %}
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> Meeting created successfully!
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Meeting Created Successfully</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Your meeting has been created and saved to the database. You can manage it from the Video Classes page.
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Topic:</div>
+                                <div class="col-md-8">{{ topic }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Meeting ID:</div>
+                                <div class="col-md-8">{{ meeting_id }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Password:</div>
+                                <div class="col-md-8">{{ password }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Start Time:</div>
+                                <div class="col-md-8" id="start_time_display"></div>
+                            </div>
+                            
+                            <!-- Join Meeting Card -->
+                            <div class="card border-primary mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-link me-2"></i>Meeting Link</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Join URL:</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" value="{{ join_url }}" id="join_url_input" readonly>
+                                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('{{ join_url }}')">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ join_url }}" target="_blank" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-video me-2"></i> Join Meeting Now
+                                        </a>
+                                        {% if start_url %}
+                                        <a href="{{ start_url }}" target="_blank" class="btn btn-outline-success">
+                                            <i class="fas fa-play-circle me-2"></i> Start Meeting (Host)
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'video_conferences_list' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-list me-2"></i> View All Meetings
+                                </a>
+                                <a href="{% url 'server_to_server_meeting' %}" class="btn btn-outline-success">
+                                    <i class="fas fa-plus me-2"></i> Create Another Meeting
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const startTimeDisplay = document.getElementById('start_time_display');
+                            if (startTimeDisplay) {
+                                // Format the date nicely - this assumes we're passing start_time in the context
+                                const startTime = new Date('{{ start_time }}');
+                                if (!isNaN(startTime)) {
+                                    startTimeDisplay.textContent = startTime.toLocaleString();
+                                }
+                            }
+                        });
+                    </script>
+                    {% endif %}
+
+                    <!-- Alert boxes for features -->
+                    <div class="alert alert-success mb-4">
+                        <i class="fas fa-check-circle me-2"></i> When you schedule your class, a new Zoom meeting will be automatically created in your connected Zoom account.
+                        <p class="small mb-0">The meeting link, ID, and password will be automatically populated - no need to enter them manually.</p>
+                    </div>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-envelope me-2"></i> Email notifications will be sent automatically to all students in the selected class level, inviting them to join the meeting.
+                    </div>
+                    
+                    <form method="post" action="{% url 'server_to_server_meeting' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="topic" class="form-label">Meeting Topic</label>
+                            <input type="text" class="form-control" id="topic" name="topic" required
+                                placeholder="Enter meeting topic">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Host Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                required value="senthil@kalsdatalabs.com"
+                                placeholder="Enter a valid Zoom user email from your account">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="subject" class="form-label">Subject</label>
+                                <select class="form-select" id="subject" name="subject" required>
+                                    <option value="">Select a Subject</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="class_level" class="form-label">Class Level</label>
+                                <select class="form-select" id="class_level" name="class_level" required>
+                                    <option value="">Select a Class Level</option>
+                                    {% for code, name in class_levels %}
+                                    <option value="{{ code }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="start_time" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="start_time" name="start_time" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="duration" class="form-label">Duration (minutes)</label>
+                                <input type="number" class="form-control" id="duration" name="duration" min="15" max="240" value="60" required>
+                            </div>
+                            <div class="col-md-6">senthil
+                                <label for="end_time_display" class="form-label">End Time (calculated)</label>
+                                <input type="text" class="form-control" id="end_time_display" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="selected_participants" class="form-label">Select Participants</label>
+                            <select multiple class="form-select" id="selected_participants" name="selected_participants" size="5">
+                                {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }} ({{ user.profile.get_role_display }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Hold Ctrl (or Command on Mac) to select multiple participants. Leave empty to invite all users in the selected class level.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="true" id="enable_sdk" name="enable_sdk" checked>
+                                <label class="form-check-label" for="enable_sdk">
+                                    Enable Zoom SDK Integration
+                                </label>
+                                <div class="form-text">This allows students to join meetings directly in their browser without installing Zoom.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" 
+                                placeholder="Enter meeting description"></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calendar-plus me-2"></i> Create Zoom Meeting
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i> This feature uses Zoom's Server-to-Server OAuth to create meetings directly without user authentication.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set default date and time (tomorrow at current time)
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const dateInput = document.getElementById('start_date');
+        const timeInput = document.getElementById('start_time');
+        
+        // Format date as YYYY-MM-DD
+        const year = tomorrow.getFullYear();
+        const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const day = String(tomorrow.getDate()).padStart(2, '0');
+        dateInput.value = `${year}-${month}-${day}`;
+        
+        // Format time as HH:MM
+        const hours = String(today.getHours()).padStart(2, '0');
+        const minutes = String(today.getMinutes()).padStart(2, '0');
+        timeInput.value = `${hours}:${minutes}`;
+        
+        // Initialize end time on load
+        updateEndTime();
+    });
+    
+    // Copy join URL to clipboard
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            alert('Meeting link copied to clipboard!');
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+        });
+    }
+    
+    // Calculate and display end time based on start time and duration
+    function updateEndTime() {
+        const startDateInput = document.getElementById('start_date');
+        const startTimeInput = document.getElementById('start_time');
+        const durationInput = document.getElementById('duration');
+        const endTimeDisplay = document.getElementById('end_time_display');
+        
+        if (startDateInput.value && startTimeInput.value && durationInput.value) {
+            // Create a date object from the start date and time
+            const startDateTime = new Date(`${startDateInput.value}T${startTimeInput.value}`);
+            
+            // Add the duration in minutes
+            const durationMinutes = parseInt(durationInput.value);
+            const endDateTime = new Date(startDateTime.getTime() + durationMinutes * 60000);
+            
+            // Format the end date and time
+            const endDateFormatted = endDateTime.toLocaleDateString();
+            const endTimeFormatted = endDateTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Set the end time display value
+            endTimeDisplay.value = `${endDateFormatted} ${endTimeFormatted}`;
+        } else {
+            endTimeDisplay.value = '';
+        }
+    }
+    
+    // Add event listeners to update end time when inputs change
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('start_date');
+        const startTimeInput = document.getElementById('start_time');
+        const durationInput = document.getElementById('duration');
+        
+        startDateInput.addEventListener('change', updateEndTime);
+        startTimeInput.addEventListener('change', updateEndTime);
+        durationInput.addEventListener('input', updateEndTime);
+    });
+</script>
+{% endblock %}

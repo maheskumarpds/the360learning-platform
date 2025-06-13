@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Import Zoom Recording - the360learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Import Zoom Recording</h1>
+        <a href="{% url 'recordings_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Recordings
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            {% if not recording_info %}
+            <!-- Step 1: Enter Meeting ID -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Step 1: Enter Zoom Meeting ID</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-8">
+                            <label for="meeting_id" class="form-label">Zoom Meeting ID</label>
+                            <input type="text" class="form-control" id="meeting_id" name="meeting_id" placeholder="Enter Zoom Meeting ID" required>
+                            <div class="form-text">Enter the ID of the Zoom meeting that contains your recording.</div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i> Find Recording
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <!-- Step 2: Confirm Recording Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Step 2: Confirm Recording Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="meeting_id" value="{{ meeting_id }}">
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Found recording for meeting: <strong>{{ recording_info.topic }}</strong>
+                            {% if recording_info.recording_files|length > 1 %}
+                            <p class="mb-0 mt-1">This meeting has {{ recording_info.recording_files|length }} recording files. The main recording will be imported.</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title *</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ recording_info.topic }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ recording_info.agenda }}</textarea>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="subject" class="form-label">Subject *</label>
+                                <select class="form-select" id="subject" name="subject" required>
+                                    <option value="">Select a subject</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="class_level" class="form-label">Class Level *</label>
+                                <select class="form-select" id="class_level" name="class_level" required>
+                                    <option value="">Select a class level</option>
+                                    {% for code, name in class_levels %}
+                                    <option value="{{ code }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-file-import me-2"></i> Import Recording
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Recording Preview -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recording Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Meeting Topic</th>
+                                    <td>{{ recording_info.topic }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Start Time</th>
+                                    <td>{{ recording_info.start_time }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Duration</th>
+                                    <td>
+                                        {% with duration=recording_info.duration|default:0 %}
+                                        {% if duration > 60 %}
+                                        {{ duration|floatformat:0|divisibleby:60 }} hour{% if not duration|floatformat:0|divisibleby:60 == 60 %}s{% endif %}
+                                        {{ duration|floatformat:0|mod:60 }} minute{% if not duration|floatformat:0|mod:60 == 1 %}s{% endif %}
+                                        {% else %}
+                                        {{ duration }} minute{% if not duration == 1 %}s{% endif %}
+                                        {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Recording Files</th>
+                                    <td>{{ recording_info.recording_files|length }}</td>
+                                </tr>
+                                {% if recording_info.total_size %}
+                                <tr>
+                                    <th>Total Size</th>
+                                    <td>{{ recording_info.total_size|filesizeformat }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-4 d-flex flex-column justify-content-center">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-video fa-5x style="color: #2d7d2f;" mb-3"></i>
+                                <p class="lead mb-0">Ready to import</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Import Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li class="mb-2">Enter your Zoom meeting ID to locate your recording</li>
+                        <li class="mb-2">The recording must be stored in Zoom Cloud</li>
+                        <li class="mb-2">You must be the meeting host or have access to the recording</li>
+                        <li class="mb-2">Once imported, the recording will be available in the recordings library</li>
+                        <li class="mb-2">Make sure to select the appropriate subject and class level when importing</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Don't have Zoom recordings?</h5>
+                </div>
+                <div class="card-body">
+                    <p>If you have recordings from other sources, you can upload them manually.</p>
+                    <div class="d-grid">
+                        <a href="{% url 'recording_upload' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-upload me-2"></i> Manual Upload
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

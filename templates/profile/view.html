@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}{{ profile.user.get_full_name|default:profile.user.username }}'s Profile - the360learning{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="profile-header">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8 offset-lg-2 text-center">
+                {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture }}" alt="{{ profile.user.get_full_name|default:profile.user.username }}" class="profile-img mb-3" 
+                     onerror="this.src='https://ui-avatars.com/api/?name={{ profile.user.get_full_name|default:profile.user.username }}&background=4e73df&color=fff&size=200';this.onerror='';">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ profile.user.get_full_name|default:profile.user.username }}&background=4e73df&color=fff&size=200" 
+                     alt="{{ profile.user.get_full_name|default:profile.user.username }}" class="profile-img mb-3">
+                {% endif %}
+                <h1 class="profile-name">{{ profile.user.get_full_name|default:profile.user.username }}</h1>
+                <p class="profile-role mb-0">{{ profile.get_role_display }}</p>
+                {% if profile.class_level %}
+                <span class="badge bg-light mt-2" style="color: #2d7d2f;">{{ profile.class_level|class_level_display }}</span>
+                {% endif %}
+                
+                {% if user == profile.user %}
+                <div class="mt-3">
+                    <a href="{% url 'profile_edit' %}" class="btn btn-light">Edit Profile</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <!-- User Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h6 class="mb-0"><i class="fas fa-user-circle me-2"></i>User Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="text-muted mb-1">Full Name</h6>
+                            <p>{{ profile.user.get_full_name|default:"Not specified" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Username</h6>
+                            <p>{{ profile.user.username }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="text-muted mb-1">Email</h6>
+                            <p>{{ profile.user.email|default:"Not specified" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Phone</h6>
+                            <p>{{ profile.phone_number|default:"Not specified" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="text-muted mb-1">Role</h6>
+                            <p>{{ profile.get_role_display }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">Class Level</h6>
+                            <p>{{ profile.class_level|class_level_display|default:"Not specified" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-muted mb-1">Member Since</h6>
+                            <p>{{ profile.date_joined|date:"F j, Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bio Section -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h6 class="mb-0"><i class="fas fa-address-card me-2"></i>About</h6>
+                </div>
+                <div class="card-body">
+                    {% if profile.bio %}
+                    <p>{{ profile.bio }}</p>
+                    {% else %}
+                    <p class="text-muted">No bio information available.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Role-specific Sections -->
+            {% if profile.role == 'teacher' %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h6 class="mb-0"><i class="fas fa-chalkboard-teacher me-2"></i>Teaching Information</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-0">
+                        {{ profile.user.get_full_name|default:profile.user.username }} is a teacher on the360learning platform.
+                        {% if user == profile.user %}
+                        You can create assignments, upload study materials, and schedule video conferences for your students.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% elif profile.role == 'student' %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h6 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Information</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-0">
+                        {{ profile.user.get_full_name|default:profile.user.username }} is a student in {{ profile.class_level|class_level_display }}.
+                        {% if user == profile.user %}
+                        You can access study materials, submit assignments, and attend video conferences for your class.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Zoom Connection Result{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-video me-2" style="color: #2d7d2f;"></i>Zoom Account Connection
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if success %}
+                        <div class="text-center py-4">
+                            <div class="mb-4">
+                                <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="mb-3">Success! Your Zoom account is now connected</h4>
+                            <p class="text-muted mb-4">
+                                You can now schedule and manage Zoom meetings directly through the the360learning platform.
+                                Your credentials are securely stored and will automatically refresh when needed.
+                            </p>
+                            
+                            <div class="d-flex justify-content-center mt-4">
+                                <a href="{% url 'zoom_oauth_meetings' %}" class="btn btn-primary me-2">
+                                    <i class="fas fa-video me-2"></i>View Your Zoom Meetings
+                                </a>
+                                <a href="{% url 'video_conference_create' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-calendar-plus me-2"></i>Schedule a Meeting
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-4">
+                                <i class="fas fa-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="mb-3">Connection Failed</h4>
+                            <p class="text-danger mb-2">{{ error_message }}</p>
+                            <p class="text-muted mb-4">
+                                There was a problem connecting your Zoom account. Please try again or contact support
+                                if the issue persists.
+                            </p>
+                            
+                            <div class="d-flex justify-content-center mt-4">
+                                <a href="{% url 'zoom_oauth_authorize' %}" class="btn btn-primary me-2">
+                                    <i class="fas fa-sync me-2"></i>Try Again
+                                </a>
+                                <a href="{% url 'video_conferences_list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Conferences
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Your Zoom account credentials are securely stored and never shared.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            {% if success %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2 text-warning"></i>What you can do now
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 style="color: #2d7d2f;"">
+                                <i class="fas fa-calendar-check fa-lg"></i>
+                            </div>
+                            <div>
+                                <strong>Schedule meetings</strong>
+                                <p class="text-muted mb-0">Create Zoom meetings directly from the the360learning platform</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 style="color: #2d7d2f;"">
+                                <i class="fas fa-list fa-lg"></i>
+                            </div>
+                            <div>
+                                <strong>Manage your meetings</strong>
+                                <p class="text-muted mb-0">View and manage all your Zoom meetings in one place</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 style="color: #2d7d2f;"">
+                                <i class="fas fa-users fa-lg"></i>
+                            </div>
+                            <div>
+                                <strong>Share with students</strong>
+                                <p class="text-muted mb-0">Students can join your meetings with a single click</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>the360learning - New Login</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2d7d2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #2d7d2f;
+        }
+        .button {
+            display: inline-block;
+            background-color: #2d7d2f;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .details {
+            background-color: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+        .alert {
+            background-color: #fee2e2;
+            padding: 10px 15px;
+            border-left: 4px solid #ef4444;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>the360learning - New Login</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ user.first_name|default:user.username }},</p>
+            
+            <p>We detected a new login to your the360learning account.</p>
+            
+            <div class="details">
+                <h2>Login Details</h2>
+                <p><strong>Time:</strong> {{ login_time|date:"l, F j, Y" }} at {{ login_time|time:"g:i A" }}</p>
+                {% if ip_address %}
+                <p><strong>IP Address:</strong> {{ ip_address }}</p>
+                {% endif %}
+                {% if user_agent %}
+                <p><strong>Device/Browser:</strong> {{ user_agent }}</p>
+                {% endif %}
+                <p><strong>User Role:</strong> {{ user_role|title }}</p>
+            </div>
+            
+            <p>If this was you, no further action is needed. You can continue using your the360learning account as normal.</p>
+            
+            <div class="alert">
+                <p><strong>Wasn't you?</strong> If you didn't log in at this time, please change your password immediately and contact your administrator.</p>
+            </div>
+            
+            <p>For security reasons, we recommend using a strong, unique password for your the360learning account and not sharing your credentials with others.</p>
+            
+            <p>Thank you for using the360learning!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {% now "Y" %} the360learning. All rights reserved.</p>
+            <p>This email was sent to {{ user.email }} regarding your the360learning account.</p>
+        </div>
+    </div>
+</body>
+</html>

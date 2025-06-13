@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Recording - the360learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Edit Recording</h1>
+        <div>
+            <a href="{% url 'recording_detail' recording_id=recording.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Recording
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">Title *</label>
+                            <input type="text" name="title" id="id_title" class="form-control {% if form.title.errors %}is-invalid{% endif %}" value="{{ form.title.value|default:'' }}" required>
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            <textarea name="description" id="id_description" rows="3" class="form-control {% if form.description.errors %}is-invalid{% endif %}">{{ form.description.value|default:'' }}</textarea>
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_subject" class="form-label">Subject *</label>
+                                <select name="subject" id="id_subject" class="form-select {% if form.subject.errors %}is-invalid{% endif %}" required>
+                                    <option value="">Select a subject</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject.id }}" {% if form.subject.value|stringformat:"s" == subject.id|stringformat:"s" %}selected{% endif %}>{{ subject.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.subject.errors %}
+                                <div class="invalid-feedback">{{ form.subject.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="id_class_level" class="form-label">Class Level *</label>
+                                <select name="class_level" id="id_class_level" class="form-select {% if form.class_level.errors %}is-invalid{% endif %}" required>
+                                    <option value="">Select a class level</option>
+                                    {% for code, name in class_levels %}
+                                    <option value="{{ code }}" {% if form.class_level.value == code %}selected{% endif %}>{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.class_level.errors %}
+                                <div class="invalid-feedback">{{ form.class_level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_recorded_date" class="form-label">Recorded Date *</label>
+                                <input type="date" name="recorded_date" id="id_recorded_date" class="form-control {% if form.recorded_date.errors %}is-invalid{% endif %}" value="{{ form.recorded_date.value|date:'Y-m-d' }}" required>
+                                {% if form.recorded_date.errors %}
+                                <div class="invalid-feedback">{{ form.recorded_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="id_duration_minutes" class="form-label">Duration (minutes) *</label>
+                                <input type="number" name="duration_minutes" id="id_duration_minutes" class="form-control {% if form.duration_minutes.errors %}is-invalid{% endif %}" value="{{ form.duration_minutes.value }}" min="1" required>
+                                {% if form.duration_minutes.errors %}
+                                <div class="invalid-feedback">{{ form.duration_minutes.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_recording_url" class="form-label">Recording URL *</label>
+                            <input type="url" name="recording_url" id="id_recording_url" class="form-control {% if form.recording_url.errors %}is-invalid{% endif %}" value="{{ form.recording_url.value }}" required>
+                            {% if form.recording_url.errors %}
+                            <div class="invalid-feedback">{{ form.recording_url.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_thumbnail_url" class="form-label">Thumbnail URL</label>
+                            <input type="url" name="thumbnail_url" id="id_thumbnail_url" class="form-control {% if form.thumbnail_url.errors %}is-invalid{% endif %}" value="{{ form.thumbnail_url.value|default:'' }}">
+                            {% if form.thumbnail_url.errors %}
+                            <div class="invalid-feedback">{{ form.thumbnail_url.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'recording_detail' recording_id=recording.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Current Recording Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if recording.thumbnail_url %}
+                        <img src="{{ recording.thumbnail_url }}" class="img-fluid rounded mb-3" alt="{{ recording.title }}">
+                        {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 160px;">
+                            <i class="fas fa-video fa-3x text-secondary"></i>
+                        </div>
+                        {% endif %}
+                        <h5>{{ recording.title }}</h5>
+                        <p class="text-muted">{{ recording.subject.name }} • {{ recording.get_class_level_display }}</p>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'recording_detail' recording_id=recording.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i> View Recording
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">Danger Zone</h5>
+                </div>
+                <div class="card-body">
+                    <p>If you want to delete this recording permanently, use the delete button below.</p>
+                    <div class="d-grid">
+                        <a href="{% url 'recording_delete' recording_id=recording.id %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash-alt me-2"></i> Delete Recording
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

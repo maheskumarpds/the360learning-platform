@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Subject Details: {{ subject.name }} | the360learning{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'subject_list' %}">Subjects</a></li>
+            <li class="breadcrumb-item active">{{ subject.name }}</li>
+        </ol>
+    </nav>
+
+    {% if messages %}
+    <div class="row">
+        <div class="col">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="subject-icon me-3">
+                            <i class="fas fa-{{ subject.icon }} fa-2x style="color: #2d7d2f;""></i>
+                        </div>
+                        <h4 class="mb-0 text-dark">{{ subject.name }}</h4>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{% url 'subject_edit' subject.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit Subject
+                        </a>
+                        {% if profile.role == 'admin' %}
+                        <a href="{% url 'subject_delete' subject.id %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Description</h5>
+                    <p>{{ subject.description }}</p>
+                    
+                    <h5 class="mt-4">Class Assignments</h5>
+                    {% if class_assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Class Level</th>
+                                    <th>Assigned By</th>
+                                    <th>Assigned Date</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in class_assignments %}
+                                <tr>
+                                    <td>{{ assignment.get_class_level_display }}</td>
+                                    <td>{{ assignment.assigned_by.username|default:"System" }}</td>
+                                    <td>{{ assignment.assigned_at|date:"M d, Y" }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'class_subject_edit' assignment.id %}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'class_subject_delete' assignment.id %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{% url 'class_subject_add' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Add to More Classes
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">This subject is not assigned to any class levels yet.</p>
+                    </div>
+                    <a href="{% url 'class_subject_add' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Assign to Class
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-dark">Recent Study Materials</h5>
+                </div>
+                <div class="card-body">
+                    {% if study_materials %}
+                    <div class="list-group">
+                        {% for material in study_materials %}
+                        <a href="{% url 'material_detail' material.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ material.title }}</h6>
+                                <small>{{ material.upload_date|date:"M d, Y" }}</small>
+                            </div>
+                            <small class="text-muted">For {{ material.get_class_level_display }} • {{ material.get_file_type_display }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No study materials available for this subject.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-dark">Recent Assignments</h5>
+                </div>
+                <div class="card-body">
+                    {% if assignments %}
+                    <div class="list-group">
+                        {% for assignment in assignments %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ assignment.title }}</h6>
+                                <small>Due: {{ assignment.due_date|date:"M d, Y" }}</small>
+                            </div>
+                            <small class="text-muted">For {{ assignment.get_class_level_display }} • Difficulty: {{ assignment.get_difficulty_display }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No assignments available for this subject.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-dark">Video Conferences</h5>
+                </div>
+                <div class="card-body">
+                    {% if conferences %}
+                    <div class="list-group">
+                        {% for conference in conferences %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ conference.title }}</h6>
+                                <small>{{ conference.start_time|date:"M d, Y, g:i A" }}</small>
+                            </div>
+                            <small class="text-muted">For {{ conference.get_class_level_display }} • Platform: {{ conference.platform }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No video conferences scheduled for this subject.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Successful - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-success mb-4 shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Payment Successful</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <h5 class="mb-3">Thank you, {{ user.first_name }}!</h5>
+                        <p>Your payment of <strong>₹{{ payment.amount_total }}</strong> has been successfully processed.</p>
+                        <p>Your student account is now fully activated and you have access to all learning materials, AI tutoring, and video conferencing features for your class level.</p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Payment Receipt</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Name:</div>
+                                <div class="col-md-8">{{ user.get_full_name }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Email:</div>
+                                <div class="col-md-8">{{ user.email }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Amount Paid:</div>
+                                <div class="col-md-8">₹{{ payment.amount_total }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Currency:</div>
+                                <div class="col-md-8">{{ payment.currency|upper }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Payment ID:</div>
+                                <div class="col-md-8">{{ payment_id }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 fw-bold">Date:</div>
+                                <div class="col-md-8">{{ profile.payment_date|date:"F j, Y, g:i a" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i> Go to Your Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

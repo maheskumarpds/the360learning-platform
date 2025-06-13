@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Subject: {{ subject.name }} | the360learning{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'subject_list' %}">Subjects</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'subject_detail' subject.id %}">{{ subject.name }}</a></li>
+            <li class="breadcrumb-item active">Delete</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white py-3">
+                    <h5 class="mb-0">Confirm Deletion</h5>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Are you sure you want to delete the subject "{{ subject.name }}"?</h5>
+                    
+                    {% if total_usage > 0 %}
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">Warning: This subject is currently in use!</h6>
+                        <p>Deleting this subject will remove it from the following:</p>
+                        <ul class="mb-0">
+                            {% if usage.class_assignments > 0 %}
+                            <li>{{ usage.class_assignments }} class assignment(s)</li>
+                            {% endif %}
+                            
+                            {% if usage.study_materials > 0 %}
+                            <li>{{ usage.study_materials }} study material(s)</li>
+                            {% endif %}
+                            
+                            {% if usage.assignments > 0 %}
+                            <li>{{ usage.assignments }} assignment(s)</li>
+                            {% endif %}
+                            
+                            {% if usage.video_conferences > 0 %}
+                            <li>{{ usage.video_conferences }} video conference(s)</li>
+                            {% endif %}
+                            
+                            {% if usage.recorded_sessions > 0 %}
+                            <li>{{ usage.recorded_sessions }} recorded session(s)</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex align-items-center mt-4 mb-3">
+                        <div class="subject-icon me-3">
+                            <i class="fas fa-{{ subject.icon }} fa-2x text-danger"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ subject.name }}</h5>
+                            <p class="mb-0 text-muted">{{ subject.description }}</p>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="confirm_delete" value="yes">
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'subject_detail' subject.id %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" {% if total_usage > 0 %}onclick="return confirm('This will affect {{ total_usage }} item(s) in the system. Are you absolutely sure?')"{% endif %}>
+                                <i class="fas fa-trash-alt"></i> Delete Subject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

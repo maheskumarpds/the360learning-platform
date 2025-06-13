@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}Zoom Meeting: {{ conference.title }} (SDK Mode){% endblock %}
+
+{% block head_extra %}
+<link type="text/css" rel="stylesheet" href="https://source.zoom.us/2.18.0/css/bootstrap.css" />
+<link type="text/css" rel="stylesheet" href="https://source.zoom.us/2.18.0/css/react-select.css" />
+
+<style>
+    #zmmtg-root {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background-color: #141414;
+    }
+    
+    .sdk-return-button {
+        position: fixed;
+        top: 15px;
+        right: 20px;
+        z-index: 2000;
+        padding: 10px 15px;
+        background-color: rgba(0, 0, 0, 0.5);
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .sdk-return-button:hover {
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    .loader-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 70vh;
+    }
+    
+    .spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #007bff;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .meeting-info {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        border-left: 4px solid #4C84FF;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .error-container {
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #fff;
+        border-left: 4px solid #dc3545;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4" id="non-zoom-content">
+    <div class="meeting-info">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">
+                <i class="fas fa-video me-2" style="color: #2d7d2f;"></i>{{ conference.title }}
+            </h2>
+            <span class="status-badge bg-{% if conference.status == 'active' %}success{% elif conference.status == 'scheduled' %}warning{% else %}secondary{% endif %}">
+                {{ conference.get_status_display }}
+            </span>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p><strong>Subject:</strong> {{ conference.subject.name }}</p>
+                <p><strong>Class Level:</strong> {{ conference.get_class_level_display }}</p>
+                <p><strong>Platform:</strong> <i class="fas fa-video-camera"></i> Zoom (In-browser SDK)</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Start Time:</strong> {{ conference.start_time|date:"F j, Y, g:i a" }}</p>
+                <p><strong>Duration:</strong> {{ conference.duration_minutes }} minutes</p>
+                <p><strong>Scheduled By:</strong> {{ conference.scheduled_by.get_full_name|default:conference.scheduled_by.username }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="meeting-preparation">
+        <p class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            You're about to join a Zoom meeting directly in your browser. The meeting will open in full screen mode within this page.
+            You can exit at any time by clicking the "Leave Meeting" button or using the "Return to the360learning" button.
+        </p>
+        
+        <div class="d-grid gap-3 mb-4">
+            <button id="join-meeting-button" class="btn btn-primary btn-lg">
+                <i class="fas fa-video me-2"></i>Join Zoom Meeting Now
+            </button>
+            
+            <a href="{% url 'video_conferences_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Return to Conferences
+            </a>
+        </div>
+    </div>
+    
+    <div id="loading-indicator" class="loader-container" style="display: none;">
+        <div class="spinner"></div>
+        <h3>Connecting to Zoom meeting...</h3>
+        <p class="text-muted">Please wait while we set up your meeting</p>
+    </div>
+    
+    <div id="error-message" class="error-container" style="display: none;">
+        <h4 class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Unable to Join Meeting</h4>
+        <p id="error-text"></p>
+        <div class="mt-3">
+            <button class="btn btn-outline-primary" onclick="window.location.reload()">
+                <i class="fas fa-sync me-2"></i>Try Again
+            </button>
+            <a href="{% url 'video_conference_join' conference.id %}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-external-link-alt me-2"></i>Join with Standard Zoom
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- This is where the Zoom SDK will render -->
+<div id="zmmtg-root" style="display:none"></div>
+<button id="return-button" class="sdk-return-button" style="display:none">
+    <i class="fas fa-arrow-left me-2"></i>Return to the360learning
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Zoom SDK Scripts -->
+<script src="https://source.zoom.us/2.18.0/lib/vendor/react.min.js"></script>
+<script src="https://source.zoom.us/2.18.0/lib/vendor/react-dom.min.js"></script>
+<script src="https://source.zoom.us/2.18.0/lib/vendor/redux.min.js"></script>
+<script src="https://source.zoom.us/2.18.0/lib/vendor/redux-thunk.min.js"></script>
+<script src="https://source.zoom.us/2.18.0/zoom-meeting-2.18.0.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Meeting details
+    const meetingNumber = '{{ conference.meeting_id }}';
+    const meetingPassword = '{{ conference.meeting_password }}';
+    const userName = '{{ request.user.get_full_name|default:request.user.username }}';
+    const userEmail = '{{ request.user.email }}';
+    const isHost = {{ 1 if is_host else 0 }};
+    const apiKey = '{{ zoom_api_key }}';
+    const meetingSignature = '{{ meeting_signature }}';
+    
+    // Initialize Zoom SDK
+    ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.0/lib', '/av');
+    ZoomMtg.preLoadWasm();
+    ZoomMtg.prepareWebSDK();
+    
+    // Configure language and other settings
+    ZoomMtg.i18n.load('en-US');
+    ZoomMtg.i18n.reload('en-US');
+    
+    // Join button click handler
+    document.getElementById('join-meeting-button').addEventListener('click', function() {
+        startMeeting();
+    });
+    
+    // Return button click handler
+    document.getElementById('return-button').addEventListener('click', function() {
+        leaveMeeting();
+    });
+    
+    function startMeeting() {
+        // Show loading indicator
+        document.getElementById('meeting-preparation').style.display = 'none';
+        document.getElementById('loading-indicator').style.display = 'flex';
+        
+        // Initialize the meeting
+        ZoomMtg.init({
+            debug: false,
+            leaveUrl: window.location.href,
+            disableCORP: true,
+            showMeetingHeader: false,
+            showMeetingFooter: true,
+            isSupportAV: true,
+            isSupportChat: true,
+            isSupportQA: true,
+            isSupportCC: true,
+            isSupportPolling: true,
+            isSupportBreakout: true,
+            screenShare: true,
+            rwcBackup: '',
+            videoDrag: true,
+            sharingMode: 'both',
+            videoHeader: true,
+            isLockBottom: true,
+            isSupportNonverbal: true,
+            isShowJoiningErrorDialog: true,
+            success: function() {
+                // Join the meeting
+                ZoomMtg.join({
+                    signature: meetingSignature,
+                    meetingNumber: meetingNumber,
+                    userName: userName,
+                    apiKey: apiKey,
+                    userEmail: userEmail,
+                    passWord: meetingPassword,
+                    success: function() {
+                        // Hide non-Zoom content and show return button
+                        document.getElementById('non-zoom-content').style.display = 'none';
+                        document.getElementById('zmmtg-root').style.display = 'block';
+                        document.getElementById('return-button').style.display = 'block';
+                        
+                        console.log('Zoom meeting joined successfully');
+                        
+                        // If host, and we have permission, automatically start the meeting
+                        if (isHost) {
+                            console.log('User is host, attempting to start the meeting');
+                        }
+                    },
+                    error: function(error) {
+                        showError('Failed to join the meeting: ' + error.errorMessage);
+                        console.error('Join meeting error:', error);
+                    }
+                });
+            },
+            error: function(error) {
+                showError('Failed to initialize Zoom SDK: ' + error.errorMessage);
+                console.error('Init error:', error);
+            }
+        });
+    }
+    
+    function leaveMeeting() {
+        ZoomMtg.leaveMeeting({
+            success: function() {
+                document.getElementById('non-zoom-content').style.display = 'block';
+                document.getElementById('meeting-preparation').style.display = 'block';
+                document.getElementById('zmmtg-root').style.display = 'none';
+                document.getElementById('return-button').style.display = 'none';
+                document.getElementById('loading-indicator').style.display = 'none';
+                document.getElementById('error-message').style.display = 'none';
+            }
+        });
+    }
+    
+    function showError(message) {
+        document.getElementById('meeting-preparation').style.display = 'none';
+        document.getElementById('loading-indicator').style.display = 'none';
+        document.getElementById('error-message').style.display = 'block';
+        document.getElementById('error-text').innerText = message;
+    }
+    
+    // Automatically start meeting if URL has autoJoin parameter
+    if (new URLSearchParams(window.location.search).get('autoJoin') === 'true') {
+        startMeeting();
+    }
+});
+</script>
+{% endblock %}

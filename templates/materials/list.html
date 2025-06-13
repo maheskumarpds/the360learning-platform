@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}Study Materials - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-book me-2"></i>Study Materials</h2>
+        {% if user.userprofile.role != 'student' %}
+        <a href="{% url 'material_upload' %}" class="btn btn-primary">
+            <i class="fas fa-upload me-2"></i>Upload Material
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Search and Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" action="{% url 'materials_list' %}" id="searchForm">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="searchInput" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="searchInput" name="q" value="{{ query }}" placeholder="Search by title or description">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="subjectFilter" class="form-label">Subject</label>
+                        <select class="form-select" id="subjectFilter" name="subject">
+                            <option value="">All Subjects</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:"i" %}selected{% endif %}>{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="classLevelFilter" class="form-label">Class Level</label>
+                        <select class="form-select" id="classLevelFilter" name="class_level">
+                            <option value="">All Classes</option>
+                            {% for value, display in class_levels %}
+                            <option value="{{ value }}" {% if selected_class_level == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="fileTypeFilter" class="form-label">File Type</label>
+                        <select class="form-select" id="fileTypeFilter" name="file_type">
+                            <option value="">All Types</option>
+                            {% for value, display in file_types %}
+                            <option value="{{ value }}" {% if selected_file_type == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="d-grid w-100">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Results</h5>
+                <span class="badge bg-primary">{{ page_obj.paginator.count }} materials found</span>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for material in page_obj %}
+                <div class="col">
+                    <div class="card h-100 material-card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="material-icon" style="color: #2d7d2f;">
+                                    <i class="fas {{ material.file_type|file_icon }}"></i>
+                                </div>
+                                <div>
+                                    <h5 class="card-title mb-0">{{ material.title }}</h5>
+                                    <small class="text-muted">{{ material.subject.name }} | {{ material.class_level|class_level_display }}</small>
+                                </div>
+                            </div>
+                            <p class="card-text mb-3">{{ material.description|truncatechars:100 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-alt me-1"></i> {{ material.upload_date|date:"M d, Y" }}
+                                </small>
+                                <span class="badge bg-light text-dark">{{ material.get_file_type_display }}</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted me-3"><i class="fas fa-eye me-1"></i> {{ material.views }}</small>
+                                <small class="text-muted"><i class="fas fa-download me-1"></i> {{ material.downloads }}</small>
+                            </div>
+                            <div>
+                                <a href="{% url 'material_detail' material.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class_level %}&class_level={{ selected_class_level }}{% endif %}{% if selected_file_type %}&file_type={{ selected_file_type }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class_level %}&class_level={{ selected_class_level }}{% endif %}{% if selected_file_type %}&file_type={{ selected_file_type }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class_level %}&class_level={{ selected_class_level }}{% endif %}{% if selected_file_type %}&file_type={{ selected_file_type }}{% endif %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class_level %}&class_level={{ selected_class_level }}{% endif %}{% if selected_file_type %}&file_type={{ selected_file_type }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class_level %}&class_level={{ selected_class_level }}{% endif %}{% if selected_file_type %}&file_type={{ selected_file_type }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h4 class="text-muted mb-3">No study materials found</h4>
+                <p>Try adjusting your search criteria or filters.</p>
+                <a href="{% url 'materials_list' %}" class="btn btn-outline-primary">Clear Filters</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Edit Your Profile</h5>
+                </div>
+                <div class="card-body p-5">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                <input type="text" name="first_name" id="{{ form.first_name.id_for_label }}" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" value="{{ form.first_name.value|default:'' }}" required>
+                                {% if form.first_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.first_name.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                <input type="text" name="last_name" id="{{ form.last_name.id_for_label }}" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" value="{{ form.last_name.value|default:'' }}" required>
+                                {% if form.last_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.last_name.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                            <input type="email" name="email" id="{{ form.email.id_for_label }}" class="form-control {% if form.email.errors %}is-invalid{% endif %}" value="{{ form.email.value|default:'' }}" required>
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if profile.role == 'student' %}
+                        <div class="mb-4">
+                            <label for="{{ form.class_level.id_for_label }}" class="form-label">Class Level</label>
+                            <select name="class_level" id="{{ form.class_level.id_for_label }}" class="form-select {% if form.class_level.errors %}is-invalid{% endif %}" required>
+                                {% for value, display in form.fields.class_level.choices %}
+                                <option value="{{ value }}" {% if form.class_level.value == value %}selected{% endif %}>{{ display }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.class_level.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.class_level.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number (Optional)</label>
+                            <input type="tel" name="phone_number" id="{{ form.phone_number.id_for_label }}" class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}" value="{{ form.phone_number.value|default:'' }}">
+                            {% if form.phone_number.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.phone_number.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                            <textarea name="bio" id="{{ form.bio.id_for_label }}" class="form-control {% if form.bio.errors %}is-invalid{% endif %}" rows="4">{{ form.bio.value|default:'' }}</textarea>
+                            {% if form.bio.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.bio.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Tell us a little about yourself.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture URL</label>
+                            <input type="url" name="profile_picture" id="{{ form.profile_picture.id_for_label }}" class="form-control {% if form.profile_picture.errors %}is-invalid{% endif %}" value="{{ form.profile_picture.value|default:'' }}">
+                            {% if form.profile_picture.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.profile_picture.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Enter a URL to your profile picture.</div>
+                            <div id="profilePreview" class="mt-2 d-none"></div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="{% url 'profile_view' user.username %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

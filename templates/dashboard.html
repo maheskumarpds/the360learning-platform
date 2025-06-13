@@ -1,0 +1,790 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}Dashboard - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Banner -->
+    <div class="card shadow-sm mb-4 bg-gradient-primary text-white">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h4 class="mb-1">Welcome, {{ user.first_name|default:user.username }}!</h4>
+                    <p class="mb-0">{{ profile.get_role_display }} | {% if profile.class_level %}{{ profile.class_level|class_level_display }}{% else %}No class assigned{% endif %}</p>
+                </div>
+                <div class="ms-auto">
+                    <a href="{% url 'profile_view' user.username %}" class="btn btn-light btn-sm">View Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEBUG INFO FOR ROLE -->
+    <div class="alert alert-info">
+        <strong>Debug Info:</strong>
+        User: {{ user.username }} | 
+        Role from userprofile: {{ user.userprofile.role }} |
+        Profile variable role: {{ profile.role }}
+    </div>
+    
+    <!-- Student Dashboard -->
+    {% if profile.role == 'student' %}
+    <div class="row">
+        <!-- Quick Stats -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 stat-card">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Upcoming Assignments</div>
+                                    <div class="stat-value">{{ upcoming_assignments.count }}</div>
+                                </div>
+                                <div class="fs-3" style="color: #2d7d2f;">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 stat-card success">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Upcoming Classes</div>
+                                    <div class="stat-value">{{ upcoming_classes.count }}</div>
+                                </div>
+                                <div class="text-success fs-3">
+                                    <i class="fas fa-video"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100 stat-card warning">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Recent Materials</div>
+                                    <div class="stat-value">{{ recent_materials.count }}</div>
+                                </div>
+                                <div class="text-warning fs-3">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Classes -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-video me-2"></i>Upcoming Classes</h5>
+                        <a href="{% url 'video_conferences_list' %}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_classes %}
+                    <div class="list-group list-group-flush">
+                        {% for conference in upcoming_classes %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ conference.title }}</h6>
+                                <small class="style="color: #2d7d2f;"">{{ conference.start_time|time_until }}</small>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ conference.subject.name }} | {{ conference.get_platform_display }}</p>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted">{{ conference.start_time|date:"M d, Y - h:i A" }}</small>
+                                <a href="{% url 'video_conference_join' conference.id %}" class="btn btn-sm btn-outline-primary ms-auto">Join</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-calendar-alt fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No upcoming classes scheduled</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignments Due -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Assignments Due</h5>
+                        <a href="{% url 'assignments_list' %}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_assignments %}
+                    <div class="list-group list-group-flush">
+                        {% for assignment in upcoming_assignments %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ assignment.title }}</h6>
+                                <small class="{% if assignment.due_date|time_until == 'Past due' %}text-danger{% else %}style="color: #2d7d2f;"{% endif %}">
+                                    {{ assignment.due_date|time_until }}
+                                </small>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ assignment.subject.name }} | {{ assignment.get_difficulty_display }}</p>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted">Due: {{ assignment.due_date|date:"M d, Y - h:i A" }}</small>
+                                {% if assignment.id in submissions %}
+                                <span class="badge bg-success ms-auto">Submitted</span>
+                                {% else %}
+                                <a href="{% url 'assignment_submit' assignment.id %}" class="btn btn-sm btn-outline-primary ms-auto">Submit</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-clipboard-check fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No pending assignments</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Materials -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-book me-2"></i>Recent Study Materials</h5>
+                        <a href="{% url 'materials_list' %}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_materials %}
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        {% for material in recent_materials %}
+                        <div class="col">
+                            <div class="card h-100 material-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas {{ material.file_type|file_icon }} fa-2x style="color: #2d7d2f;""></i>
+                                        <div class="ms-3">
+                                            <h6 class="mb-0">{{ material.title }}</h6>
+                                            <small class="text-muted">{{ material.subject.name }}</small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text small text-muted">{{ material.description|truncatechars:80 }}</p>
+                                </div>
+                                <div class="card-footer bg-transparent border-0">
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">{{ material.upload_date|date:"M d, Y" }}</small>
+                                        <a href="{% url 'material_detail' material.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-book-open fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No study materials available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Submissions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>My Submissions</h5>
+                </div>
+                <div class="card-body">
+                    {% if submitted_assignments %}
+                    <div class="list-group list-group-flush">
+                        {% for submission in submitted_assignments %}
+                        <div class="list-group-item px-0">
+                            <h6 class="mb-1">{{ submission.assignment.title }}</h6>
+                            <p class="mb-1 text-muted small">{{ submission.assignment.subject.name }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ submission.submitted_at|date:"M d, Y" }}</small>
+                                {% if submission.is_graded %}
+                                <span class="badge bg-success">{{ submission.points_earned }}/{{ submission.assignment.total_points }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Pending</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-inbox fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No submitted assignments</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'materials_list' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-book d-block mb-2 fa-2x"></i>
+                                Study Materials
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'video_conferences_list' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-video d-block mb-2 fa-2x"></i>
+                                Live Classes
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'ai_tutor_chat' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-robot d-block mb-2 fa-2x"></i>
+                                AI Tutor
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'recordings_list' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-play-circle d-block mb-2 fa-2x"></i>
+                                Recordings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Teacher Dashboard -->
+    {% elif profile.role == 'admin' %}
+    <!-- Admin Dashboard -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-success">
+                <strong>Admin Dashboard</strong> - You have administrative access to the platform.
+            </div>
+        </div>
+        
+        <!-- Admin Quick Stats -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 stat-card">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Total Users</div>
+                                    <div class="stat-value">{{ user_count }}</div>
+                                </div>
+                                <div class="fs-3" style="color: #2d7d2f;">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 stat-card success">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Total Classes</div>
+                                    <div class="stat-value">{{ class_count }}</div>
+                                </div>
+                                <div class="text-success fs-3">
+                                    <i class="fas fa-chalkboard"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 stat-card warning">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Total Subjects</div>
+                                    <div class="stat-value">{{ subject_count }}</div>
+                                </div>
+                                <div class="text-warning fs-3">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-0 h-100 stat-card danger">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Total Materials</div>
+                                    <div class="stat-value">{{ material_count }}</div>
+                                </div>
+                                <div class="text-danger fs-3">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Admin Quick Actions -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Administrative Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{% url 'user_management' %}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-users-cog me-2"></i>User Management
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'subject_list' %}" class="btn btn-info text-white w-100 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-book me-2"></i>Subject Management
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'class_subjects_list' %}" class="btn btn-success w-100 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-book-reader me-2"></i>Class-Subject Assignments
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'material_upload' %}" class="btn btn-warning text-dark w-100 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-file-upload me-2"></i>Upload Study Material
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Users -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Recent Users</h5>
+                        <a href="{% url 'user_management' %}" class="btn btn-sm btn-outline-primary ms-auto">Manage Users</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_users %}
+                    <div class="list-group list-group-flush">
+                        {% for user_profile in recent_users %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-3">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ user_profile.user.get_full_name|default:user_profile.user.username }}</h6>
+                                    <small class="text-muted">{{ user_profile.get_role_display }} | Joined: {{ user_profile.date_joined|date:"M d, Y" }}</small>
+                                </div>
+                                <a href="{% url 'edit_user_access' user_profile.user.id %}" class="btn btn-sm btn-outline-primary ms-auto">Edit</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-users fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No recent users</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Study Materials -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Recent Study Materials</h5>
+                        <a href="{% url 'materials_list' %}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_materials %}
+                    <div class="list-group list-group-flush">
+                        {% for material in recent_materials %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ material.title }}</h6>
+                                <span class="badge bg-light text-dark">{{ material.get_file_type_display }}</span>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ material.subject.name }} | {{ material.class_level|class_level_display }}</p>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted">Uploaded by: {{ material.uploaded_by.get_full_name|default:material.uploaded_by.username }}</small>
+                                <a href="{% url 'material_detail' material.id %}" class="btn btn-sm btn-outline-primary ms-auto">View</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-book fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No study materials available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% elif profile.role == 'teacher' %}
+    <div class="row">
+        <!-- Quick Stats -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 stat-card">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Created Assignments</div>
+                                    <div class="stat-value">{{ created_assignments.count }}</div>
+                                </div>
+                                <div class="fs-3" style="color: #2d7d2f;">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 stat-card success">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Uploaded Materials</div>
+                                    <div class="stat-value">{{ uploaded_materials.count }}</div>
+                                </div>
+                                <div class="text-success fs-3">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 stat-card warning">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Scheduled Classes</div>
+                                    <div class="stat-value">{{ upcoming_classes.count }}</div>
+                                </div>
+                                <div class="text-warning fs-3">
+                                    <i class="fas fa-video"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card shadow-sm border-0 h-100 stat-card danger">
+                        <div class="card-body py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Pending Submissions</div>
+                                    <div class="stat-value">{{ pending_submissions.count }}</div>
+                                </div>
+                                <div class="text-danger fs-3">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Submissions -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Pending Submissions</h5>
+                        <a href="{% url 'assignments_list' %}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if pending_submissions %}
+                    <div class="list-group list-group-flush">
+                        {% for submission in pending_submissions %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ submission.assignment.title }}</h6>
+                                <small class="text-muted">{{ submission.submitted_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ submission.student.get_full_name|default:submission.student.username }} | {{ submission.assignment.subject.name }}</p>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted">Submitted: {{ submission.submitted_at|timesince }} ago</small>
+                                <a href="{% url 'submission_grade' submission.id %}" class="btn btn-sm btn-outline-primary ms-auto">Grade</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-clipboard-check fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No pending submissions to grade</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Classes -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-video me-2"></i>Your Scheduled Classes</h5>
+                        <a href="{% url 'video_conference_create' %}" class="btn btn-sm btn-primary ms-auto">Schedule New</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_classes %}
+                    <div class="list-group list-group-flush">
+                        {% for conference in upcoming_classes %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ conference.title }}</h6>
+                                <small class="style="color: #2d7d2f;"">{{ conference.start_time|time_until }}</small>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ conference.subject.name }} | {{ conference.class_level|class_level_display }}</p>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted">{{ conference.start_time|date:"M d, Y - h:i A" }}</small>
+                                <a href="{% url 'video_conference_join' conference.id %}" class="btn btn-sm btn-outline-primary ms-auto">Join</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-calendar-alt fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No upcoming classes scheduled</p>
+                        <a href="{% url 'video_conference_create' %}" class="btn btn-primary">Schedule Class</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Assignments -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Your Assignments</h5>
+                        <a href="{% url 'assignment_create' %}" class="btn btn-sm btn-primary ms-auto">Create New</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if created_assignments %}
+                    <div class="list-group list-group-flush">
+                        {% for assignment in created_assignments %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ assignment.title }}</h6>
+                                <small class="{% if assignment.due_date|time_until == 'Past due' %}text-danger{% else %}style="color: #2d7d2f;"{% endif %}">
+                                    {{ assignment.due_date|time_until }}
+                                </small>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ assignment.subject.name }} | {{ assignment.class_level|class_level_display }}</p>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted">Due: {{ assignment.due_date|date:"M d, Y - h:i A" }}</small>
+                                <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-sm btn-outline-primary ms-auto">View</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-clipboard-list fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No assignments created yet</p>
+                        <a href="{% url 'assignment_create' %}" class="btn btn-primary">Create Assignment</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Uploaded Materials -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-book me-2"></i>Your Study Materials</h5>
+                        <a href="{% url 'material_upload' %}" class="btn btn-sm btn-primary ms-auto">Upload New</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if uploaded_materials %}
+                    <div class="list-group list-group-flush">
+                        {% for material in uploaded_materials %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ material.title }}</h6>
+                                <span class="badge bg-light text-dark">{{ material.get_file_type_display }}</span>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ material.subject.name }} | {{ material.class_level|class_level_display }}</p>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted">Uploaded: {{ material.upload_date|date:"M d, Y" }}</small>
+                                <a href="{% url 'material_detail' material.id %}" class="btn btn-sm btn-outline-primary ms-auto">View</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-book fa-3x text-muted"></i>
+                        </div>
+                        <p class="text-muted">No study materials uploaded yet</p>
+                        <a href="{% url 'material_upload' %}" class="btn btn-primary">Upload Material</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Teacher Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'material_upload' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-upload d-block mb-2 fa-2x"></i>
+                                Upload Material
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'assignment_create' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-file-alt d-block mb-2 fa-2x"></i>
+                                Create Assignment
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'video_conference_create' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-calendar-plus d-block mb-2 fa-2x"></i>
+                                Schedule Class
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'recording_upload' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-video d-block mb-2 fa-2x"></i>
+                                Upload Recording
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Default Dashboard -->
+    {% else %}
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">Welcome to the360learning!</h5>
+                <p>This is your personal dashboard. As you use the platform, you'll see personalized information here.</p>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'materials_list' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-book d-block mb-2 fa-2x"></i>
+                                Study Materials
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'video_conferences_list' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-video d-block mb-2 fa-2x"></i>
+                                Live Classes
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'ai_tutor_chat' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-robot d-block mb-2 fa-2x"></i>
+                                AI Tutor
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'recordings_list' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-play-circle d-block mb-2 fa-2x"></i>
+                                Recordings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

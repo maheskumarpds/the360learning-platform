@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block extra_js %}
+<script>
+    // Copy meeting link to clipboard using a more compatible approach
+    function copyToClipboard(text) {
+        // Create a temporary textarea element
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';  // Avoid scrolling to bottom
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            // Execute the copy command
+            const successful = document.execCommand('copy');
+            if (successful) {
+                // Show success message
+                alert('Meeting link copied to clipboard!');
+            } else {
+                alert('Unable to copy meeting link. Please try manually copying it.');
+            }
+        } catch (err) {
+            console.error('Error copying text: ', err);
+            alert('Failed to copy meeting link. Please manually select and copy the meeting link.');
+        }
+        
+        // Remove the temporary element
+        document.body.removeChild(textArea);
+    }
+    
+    $(document).ready(function() {
+        // Initialize tooltips
+        $('[data-bs-toggle="tooltip"]').tooltip();
+        
+        // Use clipboard.js if available (more modern approach)
+        if (typeof ClipboardJS !== 'undefined') {
+            new ClipboardJS('.copy-btn');
+        }
+    });
+</script>
+{% endblock %}
+
+{% block title %}Video Classes - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-video me-2"></i>Video Classes</h2>
+        {% if user.userprofile.role != 'student' %}
+        <div>
+            <a href="{% url 'server_to_server_meeting' %}" class="btn btn-primary">
+                <i class="fas fa-bolt me-2"></i>Quick Zoom Meeting
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Upcoming Conferences -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Upcoming Classes</h5>
+        </div>
+        <div class="card-body">
+            {% if upcoming_page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Class Level</th>
+                            <th>Platform</th>
+                            <th>Date & Time</th>
+                            <th>Scheduled By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conference in upcoming_page_obj %}
+                        <tr class="align-middle">
+                            <td>
+                                <strong>{{ conference.title }}</strong>
+                                {% if conference.is_recurring %}
+                                <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="This class repeats regularly">
+                                    Recurring
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ conference.subject.name }}</td>
+                            <td>{{ conference.class_level|class_level_display }}</td>
+                            <td>
+                                <i class="fas {{ conference.platform|platform_icon }} me-1"></i>
+                                {{ conference.get_platform_display }}
+                            </td>
+                            <td>
+                                <div>{{ conference.start_time|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ conference.start_time|date:"g:i A" }} - {{ conference.end_time|date:"g:i A" }}</small>
+                            </td>
+                            <td>{{ conference.scheduled_by.get_full_name|default:conference.scheduled_by.username }}</td>
+                            <td>
+                                <div class="d-flex">
+                                    {% if conference.meeting_link %}
+                                    <a href="{{ conference.meeting_link }}" target="_blank" class="btn btn-sm btn-success me-2">
+                                        <i class="fas fa-video me-1"></i> Join Meeting
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="copyToClipboard('{{ conference.meeting_link }}')" title="Copy meeting link to clipboard">
+                                        <i class="fas fa-copy me-1"></i> Copy Link
+                                    </button>
+                                    {% endif %}
+                                    <a href="{% url 'video_conference_detail' conference.id %}" class="btn btn-sm btn-primary me-2">
+                                        <i class="fas fa-info-circle me-1"></i> Details
+                                    </a>
+                                    {% if user == conference.scheduled_by or user.userprofile.role == 'admin' %}
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                            <li><a class="dropdown-item" href="{% url 'video_conference_edit' conference.id %}">Edit</a></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#" 
+                                                   data-bs-toggle="modal" 
+                                                   data-bs-target="#deleteModal{{ conference.id }}">
+                                                    Cancel
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        
+                                        <!-- Delete Confirmation Modal -->
+                                        <div class="modal fade" id="deleteModal{{ conference.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ conference.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="deleteModalLabel{{ conference.id }}">Confirm Cancellation</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Are you sure you want to cancel this meeting?</p>
+                                                        <p><strong>Title:</strong> {{ conference.title }}</p>
+                                                        <p><strong>Date:</strong> {{ conference.start_time|date:"M d, Y" }} at {{ conference.start_time|date:"g:i A" }}</p>
+                                                        
+                                                        {% if conference.platform == 'zoom' and conference.used_oauth %}
+                                                        <div class="alert alert-info">
+                                                            <i class="fas fa-info-circle me-2"></i>
+                                                            This meeting will also be cancelled in your Zoom account.
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        {% if conference.platform == 'zoom' and conference.used_oauth %}
+                                                        <a href="{% url 'zoom_oauth_delete_meeting' conference.id %}" class="btn btn-danger">
+                                                            Cancel Meeting
+                                                        </a>
+                                                        {% else %}
+                                                        <form method="post" action="{% url 'video_conference_delete' conference.id %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger">Cancel Meeting</button>
+                                                        </form>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if upcoming_page_obj.paginator.num_pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if upcoming_page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?upcoming_page=1{% if past_page %}&past_page={{ past_page }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?upcoming_page={{ upcoming_page_obj.previous_page_number }}{% if past_page %}&past_page={{ past_page }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in upcoming_page_obj.paginator.page_range %}
+                        {% if upcoming_page_obj.number == i %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                        {% elif i > upcoming_page_obj.number|add:'-3' and i < upcoming_page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?upcoming_page={{ i }}{% if past_page %}&past_page={{ past_page }}{% endif %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if upcoming_page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?upcoming_page={{ upcoming_page_obj.next_page_number }}{% if past_page %}&past_page={{ past_page }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?upcoming_page={{ upcoming_page_obj.paginator.num_pages }}{% if past_page %}&past_page={{ past_page }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3">
+                    <i class="fas fa-video-slash"></i>
+                </div>
+                <h4 class="text-muted mb-3">No upcoming classes</h4>
+                {% if user.userprofile.role != 'student' %}
+                <a href="{% url 'server_to_server_meeting' %}" class="btn btn-primary">Schedule a Quick Meeting</a>
+                {% else %}
+                <p>Check back later for scheduled classes.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Past Conferences -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Past Classes</h5>
+        </div>
+        <div class="card-body">
+            {% if past_page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Class Level</th>
+                            <th>Platform</th>
+                            <th>Date & Time</th>
+                            <th>Scheduled By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conference in past_page_obj %}
+                        <tr class="align-middle">
+                            <td>
+                                <strong>{{ conference.title }}</strong>
+                                {% if conference.is_recurring %}
+                                <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="This class repeats regularly">
+                                    Recurring
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ conference.subject.name }}</td>
+                            <td>{{ conference.class_level|class_level_display }}</td>
+                            <td>
+                                <i class="fas {{ conference.platform|platform_icon }} me-1"></i>
+                                {{ conference.get_platform_display }}
+                            </td>
+                            <td>
+                                <div>{{ conference.start_time|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ conference.start_time|date:"g:i A" }} - {{ conference.end_time|date:"g:i A" }}</small>
+                            </td>
+                            <td>{{ conference.scheduled_by.get_full_name|default:conference.scheduled_by.username }}</td>
+                            <td>
+                                {% if user.userprofile.role != 'student' %}
+                                <div class="d-flex">
+                                    <a href="{% url 'recordings_list' %}?subject={{ conference.subject.id }}" class="btn btn-sm btn-outline-primary">
+                                        Recordings
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if past_page_obj.paginator.num_pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if past_page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?past_page=1{% if upcoming_page %}&upcoming_page={{ upcoming_page }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?past_page={{ past_page_obj.previous_page_number }}{% if upcoming_page %}&upcoming_page={{ upcoming_page }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in past_page_obj.paginator.page_range %}
+                        {% if past_page_obj.number == i %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                        {% elif i > past_page_obj.number|add:'-3' and i < past_page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?past_page={{ i }}{% if upcoming_page %}&upcoming_page={{ upcoming_page }}{% endif %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if past_page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?past_page={{ past_page_obj.next_page_number }}{% if upcoming_page %}&upcoming_page={{ upcoming_page }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?past_page={{ past_page_obj.paginator.num_pages }}{% if upcoming_page %}&upcoming_page={{ upcoming_page }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3">
+                    <i class="fas fa-history"></i>
+                </div>
+                <h4 class="text-muted mb-3">No past classes</h4>
+                <p>Past classes will appear here after their scheduled end time.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

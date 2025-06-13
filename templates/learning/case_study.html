@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Case Study: {{ subject.name }} - the360learning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .case-study-header {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        padding: 2rem;
+        color: white;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .difficulty-badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .difficulty-easy {
+        background-color: #1cc88a;
+        color: white;
+    }
+    
+    .difficulty-medium {
+        background-color: #f6c23e;
+        color: white;
+    }
+    
+    .difficulty-hard {
+        background-color: #e74a3b;
+        color: white;
+    }
+    
+    .case-scenario {
+        background-color: #f8f9fc;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 5px solid #4e73df;
+        margin-bottom: 2rem;
+    }
+    
+    .question-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .question-header {
+        background-color: #f8f9fc;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    
+    .question-body {
+        padding: 1.5rem;
+    }
+    
+    .learning-points {
+        background-color: #eaecf4;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-top: 2rem;
+    }
+    
+    .related-materials {
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+    
+    .answer-reveal {
+        display: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #f8f9fc;
+        border-radius: 5px;
+        border-left: 3px solid #1cc88a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Case Study</h1>
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="difficultyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Difficulty: {{ difficulty|title }}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="difficultyDropdown">
+                <li><a class="dropdown-item" href="?difficulty=easy">Easy</a></li>
+                <li><a class="dropdown-item" href="?difficulty=medium">Medium</a></li>
+                <li><a class="dropdown-item" href="?difficulty=hard">Hard</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="case-study-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">{{ case_study.title }}</h2>
+            <span class="difficulty-badge difficulty-{{ difficulty }}">{{ difficulty }}</span>
+        </div>
+        <p class="mb-0">Subject: {{ subject.name }} - {{ profile.get_class_level_display }}</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="case-scenario">
+                <h3 class="mb-3">Scenario</h3>
+                <p>{{ case_study.scenario }}</p>
+            </div>
+            
+            <h3 class="mb-3">Questions</h3>
+            {% for question in case_study.questions %}
+            <div class="question-card">
+                <div class="question-header">
+                    <h4 class="m-0">Question {{ forloop.counter }}</h4>
+                </div>
+                <div class="question-body">
+                    <p>{{ question.question }}</p>
+                    <button class="btn btn-primary show-answer" data-answer-id="answer-{{ forloop.counter }}">Show Answer</button>
+                    <div id="answer-{{ forloop.counter }}" class="answer-reveal">
+                        <h5>Answer:</h5>
+                        <p>{{ question.answer }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="learning-points">
+                <h3 class="mb-3">Key Learning Points</h3>
+                <ul class="mb-0">
+                    {% for point in case_study.learning_points %}
+                    <li class="mb-2">{{ point }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="related-materials">
+                <h3 class="mb-3">Related Study Materials</h3>
+                {% if related_materials %}
+                <ul class="list-group">
+                    {% for material in related_materials %}
+                    <li class="list-group-item">
+                        <a href="{% url 'material_detail' material.pk %}">{{ material.title }}</a>
+                        <span class="badge bg-primary rounded-pill float-end">{{ material.get_file_type_display }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No related materials found.</p>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <a href="{% url 'materials_list' %}?subject={{ subject.id }}" class="btn btn-outline-primary w-100">
+                        View All Materials
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide answers
+    const answerButtons = document.querySelectorAll('.show-answer');
+    
+    answerButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const answerId = this.getAttribute('data-answer-id');
+            const answerElement = document.getElementById(answerId);
+            
+            if (answerElement.style.display === 'block') {
+                answerElement.style.display = 'none';
+                this.textContent = 'Show Answer';
+            } else {
+                answerElement.style.display = 'block';
+                this.textContent = 'Hide Answer';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Recordings - the360learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Recorded Sessions</h1>
+        <div class="d-flex">
+            {% if user_role != 'student' %}
+            <a href="{% url 'import_zoom_recording' %}" class="btn btn-primary me-2">
+                <i class="fas fa-file-import me-1"></i> Import from Zoom
+            </a>
+            <a href="{% url 'recording_upload' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-upload me-1"></i> Upload Recording
+            </a>
+            {% endif %}
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-sort me-1"></i> Sort
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                    <li><a class="dropdown-item" href="?{% if search_query %}search={{ search_query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class %}&class_level={{ selected_class }}{% endif %}&sort=recent">Most Recent</a></li>
+                    <li><a class="dropdown-item" href="?{% if search_query %}search={{ search_query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class %}&class_level={{ selected_class }}{% endif %}&sort=popular">Most Viewed</a></li>
+                    <li><a class="dropdown-item" href="?{% if search_query %}search={{ search_query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class %}&class_level={{ selected_class }}{% endif %}&sort=title">Title (A-Z)</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-5">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" placeholder="Search by title or description" value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="subject" class="form-label">Subject</label>
+                    <select class="form-select" id="subject" name="subject">
+                        <option value="">All Subjects</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:"s" %}selected{% endif %}>{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% if user_role != 'student' and class_levels %}
+                <div class="col-md-2">
+                    <label for="class_level" class="form-label">Class Level</label>
+                    <select class="form-select" id="class_level" name="class_level">
+                        <option value="">All Classes</option>
+                        {% for class_code, class_name in class_levels %}
+                        <option value="{{ class_code }}" {% if selected_class == class_code %}selected{% endif %}>{{ class_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recordings Grid -->
+    {% if page_obj %}
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for recording in page_obj %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="position-relative">
+                    {% if recording.thumbnail_url %}
+                    <img src="{{ recording.thumbnail_url }}" class="card-img-top recording-thumbnail" alt="{{ recording.title }}">
+                    {% else %}
+                    <div class="card-img-top recording-thumbnail bg-light d-flex align-items-center justify-content-center">
+                        <i class="fas fa-video fa-3x text-secondary"></i>
+                    </div>
+                    {% endif %}
+                    <span class="badge bg-dark position-absolute top-0 end-0 m-2">{{ recording.duration_minutes }} min</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-truncate">{{ recording.title }}</h5>
+                    <p class="card-text text-muted">{{ recording.subject.name }} • {{ recording.get_class_level_display }}</p>
+                    <p class="card-text small text-truncate">
+                        {% if recording.description %}
+                        {{ recording.description|truncatechars:100 }}
+                        {% else %}
+                        <span class="text-muted">No description available</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="far fa-calendar-alt"></i> {{ recording.recorded_date }}
+                    </small>
+                    <a href="{% url 'recording_detail' recording_id=recording.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-play"></i> View
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class %}&class_level={{ selected_class }}{% endif %}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class %}&class_level={{ selected_class }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class %}&class_level={{ selected_class }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class %}&class_level={{ selected_class }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_class %}&class_level={{ selected_class }}{% endif %}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <!-- No Recordings Found -->
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-video fa-4x text-muted mb-3"></i>
+            <h3>No Recordings Found</h3>
+            <p class="text-muted mb-4">
+                {% if search_query or selected_subject or selected_class %}
+                No recordings match your filter criteria. Try adjusting your filters or search query.
+                {% else %}
+                No recordings are available yet. 
+                {% if user_role != 'student' %}
+                Click the "Upload Recording" button to add your first recording.
+                {% endif %}
+                {% endif %}
+            </p>
+            
+            {% if search_query or selected_subject or selected_class %}
+            <a href="{% url 'recordings_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times me-2"></i> Clear Filters
+            </a>
+            {% elif user_role != 'student' %}
+            <div class="d-flex justify-content-center">
+                <a href="{% url 'import_zoom_recording' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-file-import me-1"></i> Import from Zoom
+                </a>
+                <a href="{% url 'recording_upload' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-upload me-1"></i> Upload Recording
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recording-thumbnail {
+        height: 160px;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}

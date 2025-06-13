@@ -1,0 +1,42 @@
+/* Management dropdown menu styling */
+.management-dropdown {
+  background-color: #212529;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  width: 240px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.management-dropdown .dropdown-item {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #f8f9fa;
+  transition: all 0.2s ease;
+}
+
+.management-dropdown .dropdown-item:hover {
+  background-color: #2c3136;
+}
+
+.management-dropdown .dropdown-item i {
+  width: 20px;
+  text-align: center;
+  margin-right: 8px;
+}
+
+.management-dropdown .dropdown-divider {
+  margin: 5px 0;
+  opacity: 0.2;
+}
+
+/* Management section in navbar */
+#managementDropdown {
+  position: relative;
+}
+
+/* Highlight active management item */
+.nav-link.active-management {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}

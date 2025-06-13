@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>the360learning - Meeting {{ update_type }}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2d7d2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #2d7d2f;
+        }
+        .button {
+            display: inline-block;
+            background-color: #2d7d2f;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .details {
+            background-color: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+        .changes {
+            background-color: #fffbeb;
+            padding: 10px 15px;
+            border-left: 4px solid #f59e0b;
+            margin: 10px 0;
+        }
+        .recording {
+            background-color: #ecfdf5;
+            padding: 10px 15px;
+            border-left: 4px solid #10b981;
+            margin: 10px 0;
+        }
+        .canceled {
+            background-color: #fee2e2;
+            padding: 10px 15px;
+            border-left: 4px solid #ef4444;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>the360learning - {{ update_type }}</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ recipient.first_name|default:recipient.username }},</p>
+            
+            {% if update_type == 'Meeting Scheduled' %}
+                <p>A new meeting has been scheduled and you're invited!</p>
+                
+                <div class="details">
+                    <h2>Meeting Details</h2>
+                    <p><strong>Title:</strong> {{ meeting.title }}</p>
+                    <p><strong>Description:</strong> {{ meeting.description|default:'No description provided' }}</p>
+                    <p><strong>Subject:</strong> {{ meeting.subject.name|default:'General' }}</p>
+                    <p><strong>Class Level:</strong> {{ meeting.get_class_level_display }}</p>
+                    <p><strong>Date & Time:</strong> {{ meeting.start_time|date:"l, F j, Y" }} at {{ meeting.start_time|time:"g:i A" }}</p>
+                    <p><strong>Duration:</strong> {{ meeting.duration_minutes }} minutes</p>
+                    <p><strong>Scheduled by:</strong> {{ meeting.scheduled_by.get_full_name|default:meeting.scheduled_by.username }}</p>
+                    
+                    {% if meeting.platform == 'zoom' %}
+                        <p><strong>Platform:</strong> Zoom</p>
+                        {% if meeting.meeting_id %}
+                            <p><strong>Meeting ID:</strong> {{ meeting.meeting_id }}</p>
+                        {% endif %}
+                        {% if meeting.meeting_password %}
+                            <p><strong>Password:</strong> {{ meeting.meeting_password }}</p>
+                        {% endif %}
+                        {% if meeting.join_url %}
+                            <p><a href="{{ meeting.join_url }}" class="button">Join Zoom Meeting</a></p>
+                        {% endif %}
+                    {% else %}
+                        <p><strong>Platform:</strong> {{ meeting.platform|title }}</p>
+                    {% endif %}
+                </div>
+                
+                <p>You can view all details and join this meeting through your the360learning dashboard.</p>
+                
+            {% elif update_type == 'Meeting Updated' %}
+                <p>A meeting you're invited to has been updated. Please note the following changes:</p>
+                
+                <div class="changes">
+                    <h2>Changes Made</h2>
+                    {% if changes %}
+                        <ul>
+                            {% for change in changes %}
+                                <li>{{ change }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>The meeting details have been updated.</p>
+                    {% endif %}
+                </div>
+                
+                <div class="details">
+                    <h2>Updated Meeting Details</h2>
+                    <p><strong>Title:</strong> {{ meeting.title }}</p>
+                    <p><strong>Description:</strong> {{ meeting.description|default:'No description provided' }}</p>
+                    <p><strong>Subject:</strong> {{ meeting.subject.name|default:'General' }}</p>
+                    <p><strong>Class Level:</strong> {{ meeting.get_class_level_display }}</p>
+                    <p><strong>Date & Time:</strong> {{ meeting.start_time|date:"l, F j, Y" }} at {{ meeting.start_time|time:"g:i A" }}</p>
+                    <p><strong>Duration:</strong> {{ meeting.duration_minutes }} minutes</p>
+                    <p><strong>Scheduled by:</strong> {{ meeting.scheduled_by.get_full_name|default:meeting.scheduled_by.username }}</p>
+                    
+                    {% if meeting.platform == 'zoom' %}
+                        <p><strong>Platform:</strong> Zoom</p>
+                        {% if meeting.meeting_id %}
+                            <p><strong>Meeting ID:</strong> {{ meeting.meeting_id }}</p>
+                        {% endif %}
+                        {% if meeting.meeting_password %}
+                            <p><strong>Password:</strong> {{ meeting.meeting_password }}</p>
+                        {% endif %}
+                        {% if meeting.join_url %}
+                            <p><a href="{{ meeting.join_url }}" class="button">Join Zoom Meeting</a></p>
+                        {% endif %}
+                    {% else %}
+                        <p><strong>Platform:</strong> {{ meeting.platform|title }}</p>
+                    {% endif %}
+                </div>
+                
+            {% elif update_type == 'Meeting Cancelled' %}
+                <div class="canceled">
+                    <h2>Meeting Cancelled</h2>
+                    <p>A meeting you were invited to has been cancelled.</p>
+                </div>
+                
+                <div class="details">
+                    <h2>Cancelled Meeting Information</h2>
+                    <p><strong>Title:</strong> {{ meeting.title }}</p>
+                    <p><strong>Subject:</strong> {{ meeting.subject.name|default:'General' }}</p>
+                    <p><strong>Class Level:</strong> {{ meeting.get_class_level_display }}</p>
+                    <p><strong>Originally Scheduled:</strong> {{ meeting.start_time|date:"l, F j, Y" }} at {{ meeting.start_time|time:"g:i A" }}</p>
+                    <p><strong>Scheduled by:</strong> {{ meeting.scheduled_by.get_full_name|default:meeting.scheduled_by.username }}</p>
+                </div>
+                
+                <p>We apologize for any inconvenience this may cause. Please contact your teacher if you have any questions.</p>
+                
+            {% elif update_type == 'Recording Available' %}
+                <div class="recording">
+                    <h2>Recording Available</h2>
+                    <p>A recording is now available for a meeting you participated in!</p>
+                </div>
+                
+                <div class="details">
+                    <h2>Meeting Information</h2>
+                    <p><strong>Title:</strong> {{ meeting.title }}</p>
+                    <p><strong>Subject:</strong> {{ meeting.subject.name|default:'General' }}</p>
+                    <p><strong>Class Level:</strong> {{ meeting.get_class_level_display }}</p>
+                    <p><strong>Meeting Date:</strong> {{ meeting.start_time|date:"l, F j, Y" }} at {{ meeting.start_time|time:"g:i A" }}</p>
+                    <p><strong>Hosted by:</strong> {{ meeting.scheduled_by.get_full_name|default:meeting.scheduled_by.username }}</p>
+                    
+                    {% if recording_url %}
+                        <p><a href="{{ recording_url }}" class="button">View Recording</a></p>
+                    {% endif %}
+                </div>
+                
+                <p>You can also access all recordings through your the360learning dashboard in the Recordings section.</p>
+            {% endif %}
+            
+            <p>Thank you for using the360learning!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {% now "Y" %} the360learning. All rights reserved.</p>
+            <p>This email was sent to {{ recipient.email }} regarding your the360learning account.</p>
+        </div>
+    </div>
+</body>
+</html>

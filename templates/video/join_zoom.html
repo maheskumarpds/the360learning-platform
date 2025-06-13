@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}Join Zoom Meeting: {{ conference.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="card-title mb-4">
+                <i class="fas fa-video style="color: #2d7d2f;" me-2"></i>
+                Join Zoom Meeting: {{ conference.title }}
+            </h2>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="text-secondary">Meeting Details</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Subject:</strong> {{ conference.subject.name }}</li>
+                        <li><strong>Class Level:</strong> {{ conference.get_class_level_display }}</li>
+                        <li><strong>Start Time:</strong> {{ conference.start_time|date:"F j, Y, g:i a" }}</li>
+                        <li><strong>Duration:</strong> {{ conference.duration_minutes }} minutes</li>
+                        <li><strong>Status:</strong> <span class="badge bg-success">{{ conference.get_status_display }}</span></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-secondary">Zoom Information</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Meeting ID:</strong> {{ conference.meeting_id }}</li>
+                        {% if conference.meeting_password %}
+                        <li><strong>Password:</strong> {{ conference.meeting_password }}</li>
+                        {% endif %}
+                        <li><strong>Scheduled By:</strong> {{ conference.scheduled_by.get_full_name|default:conference.scheduled_by.username }}</li>
+                    </ul>
+                </div>
+            </div>
+            
+            {% if conference.description %}
+            <div class="mb-4">
+                <h5 class="text-secondary">Description</h5>
+                <p>{{ conference.description }}</p>
+            </div>
+            {% endif %}
+            
+            <div class="bg-light p-4 rounded-3 mb-4" id="sdkJoinSection">
+                <h5 class="style="color: #2d7d2f;" mb-3">How to Join</h5>
+                <p>You can join this Zoom meeting in one of the following ways:</p>
+                
+                <div class="d-grid gap-3">
+                    <!-- SDK Join Button - New! -->
+                    {% if meeting_signature %}
+                    <button id="sdkJoinButton" class="btn btn-success btn-lg">
+                        <i class="fas fa-video me-2"></i>Join with SDK (Browser Experience)
+                    </button>
+                    {% endif %}
+                
+                    <!-- Direct Join Button -->
+                    <div class="p-3 bg-success text-white rounded-3 mb-2">
+                        <h5><i class="fas fa-link me-2"></i>Direct Meeting Link:</h5>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control form-control-lg" value="{{ conference.meeting_link }}" readonly onclick="this.select(); document.execCommand('copy');">
+                            <button class="btn btn-light" type="button" onclick="copyToClipboard('{{ conference.meeting_link }}')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <a href="{{ conference.meeting_link }}" target="_blank" class="btn btn-primary btn-lg">
+                        <i class="fas fa-external-link-alt me-2"></i>Join Zoom Meeting Now
+                    </a>
+                    
+                    {% if is_host and conference.zoom_start_url %}
+                    <!-- Host Start Button (only for meeting host) -->
+                    <a href="{{ conference.zoom_start_url }}" target="_blank" class="btn btn-warning btn-lg">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Start Meeting as Host
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Manual Join Option -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Manually Join via Zoom App</h6>
+                            <p class="card-text">Open your Zoom app and enter the following details:</p>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Meeting ID</span>
+                                <input type="text" class="form-control" value="{{ conference.meeting_id }}" readonly onclick="this.select(); document.execCommand('copy');">
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('{{ conference.meeting_id }}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            
+                            {% if conference.meeting_password %}
+                            <div class="input-group">
+                                <span class="input-group-text">Password</span>
+                                <input type="text" class="form-control" value="{{ conference.meeting_password }}" readonly onclick="this.select(); document.execCommand('copy');">
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('{{ conference.meeting_password }}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Container for Zoom SDK rendering -->
+            {% if meeting_signature %}
+            <div id="zoomMeetingContainer" class="mt-4 mb-4">
+                <div class="text-center py-5">
+                    <h5>Click "Join with SDK" above to start the meeting in your browser</h5>
+                    <p class="text-muted">No downloads required, join directly within this page</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'video_conferences_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Conferences
+                </a>
+                
+                <!-- Show recording details to teacher/admin -->
+                {% if profile.role != 'student' %}
+                <div>
+                    <a href="#" class="btn btn-outline-info">
+                        <i class="fas fa-cog me-2"></i>Manage Meeting
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Troubleshooting Section -->
+    <div class="accordion" id="troubleshootingAccordion">
+        <div class="accordion-item border-0 shadow-sm">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    <i class="fas fa-question-circle style="color: #2d7d2f;" me-2"></i>
+                    Zoom Troubleshooting & Tips
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" 
+                 data-bs-parent="#troubleshootingAccordion">
+                <div class="accordion-body">
+                    <h6 class="mb-3">Common Issues</h6>
+                    <ul>
+                        <li><strong>Audio or video not working?</strong> Check your device settings in Zoom.</li>
+                        <li><strong>Can't join the meeting?</strong> Make sure you're using the correct Meeting ID and Password.</li>
+                        <li><strong>Poor connection?</strong> Try closing other applications that use your internet connection.</li>
+                        <li><strong>Meeting not showing up?</strong> Refresh the page and try again.</li>
+                    </ul>
+                    
+                    <h6 class="mb-3 mt-4">Tips for Better Zoom Experience</h6>
+                    <ul>
+                        <li>Use a headset for better audio quality.</li>
+                        <li>Find a quiet place with good lighting.</li>
+                        <li>Mute yourself when not speaking to reduce background noise.</li>
+                        <li>Test your audio/video before joining the meeting.</li>
+                        <li>Use the 'Raise Hand' feature to ask questions without interrupting.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://source.zoom.us/2.18.0/lib/vendor/react.min.js"></script>
+<script src="https://source.zoom.us/2.18.0/lib/vendor/react-dom.min.js"></script>
+<script src="https://source.zoom.us/2.18.0/lib/vendor/redux.min.js"></script>
+<script src="https://source.zoom.us/2.18.0/lib/vendor/redux-thunk.min.js"></script>
+<script src="https://source.zoom.us/2.18.0/zoom-meeting-2.18.0.min.js"></script>
+
+<script>
+function copyToClipboard(text) {
+    // Create temporary element
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    
+    // Show tooltip or some indication that the text was copied
+    alert('Copied to clipboard: ' + text);
+}
+
+// Add SDK integration
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if SDK integration button exists
+    const sdkJoinBtn = document.getElementById('sdkJoinButton');
+    if (sdkJoinBtn) {
+        sdkJoinBtn.addEventListener('click', function() {
+            joinZoomMeetingWithSdk();
+        });
+    }
+});
+
+function joinZoomMeetingWithSdk() {
+    const meetingContainer = document.getElementById('zoomMeetingContainer');
+    const sdkJoinSection = document.getElementById('sdkJoinSection');
+    
+    if (meetingContainer) {
+        // Show loading indicator
+        meetingContainer.innerHTML = '<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-3">Connecting to Zoom meeting...</p></div>';
+        
+        // Get meeting parameters
+        const meetingNumber = '{{ conference.meeting_id }}';
+        const meetingPassword = '{{ conference.meeting_password }}';
+        const userName = '{{ request.user.get_full_name|default:request.user.username }}';
+        const userEmail = '{{ request.user.email }}';
+        const meetingRole = {{ 1 if is_host else 0 }}; // 1 for host, 0 for attendee
+        const meetingSignature = '{{ meeting_signature }}'; // This would be passed from the view
+        
+        // Initialize Zoom SDK
+        ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.0/lib', '/av');
+        ZoomMtg.preLoadWasm();
+        ZoomMtg.prepareWebSDK();
+        
+        // Setup meeting
+        ZoomMtg.init({
+            leaveUrl: window.location.href, // Return to this page when leaving
+            disableCORP: true,
+            success: function() {
+                ZoomMtg.join({
+                    signature: meetingSignature,
+                    meetingNumber: meetingNumber,
+                    userName: userName,
+                    userEmail: userEmail,
+                    passWord: meetingPassword,
+                    success: function() {
+                        console.log('Joined Zoom meeting successfully');
+                        if (sdkJoinSection) {
+                            sdkJoinSection.style.display = 'none'; // Hide the join section
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Failed to join Zoom meeting', error);
+                        meetingContainer.innerHTML = '<div class="alert alert-danger">Failed to join Zoom meeting. Please try using the direct link instead.</div>';
+                    }
+                });
+            },
+            error: function(error) {
+                console.error('Failed to initialize Zoom SDK', error);
+                meetingContainer.innerHTML = '<div class="alert alert-danger">Failed to initialize Zoom SDK. Please try using the direct link instead.</div>';
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+#zoomMeetingContainer {
+    width: 100%;
+    min-height: 500px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+</style>
+{% endblock %}

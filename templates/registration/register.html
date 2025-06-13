@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="card shadow rounded-4 border-0 overflow-hidden">
+                <div class="row g-0">
+                    <!-- Left side - Content -->
+                    <div class="col-lg-4 d-none d-lg-block bg-gradient-primary text-white" style="background: linear-gradient(135deg, #2d7d2f 0%, #1f5521 100%);">
+                        <div class="d-flex flex-column h-100 p-4 p-xl-5">
+                            <div class="py-5">
+                                <h2 class="display-6 fw-bold mb-3">Join Our Learning Community</h2>
+                                <p class="lead mb-4">Create your account and start your educational journey today!</p>
+                                
+                                <div class="features mt-5">
+                                    <div class="d-flex mb-4">
+                                        <div class="feature-icon bg-white rounded-circle p-3 me-3" style="width: 45px; height: 45px; color: #2d7d2f;">
+                                            <i class="fas fa-graduation-cap fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Expert Learning</h5>
+                                            <p class="mb-0 small">Access quality educational resources</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex mb-4">
+                                        <div class="feature-icon bg-white rounded-circle p-3 me-3" style="width: 45px; height: 45px; color: #2d7d2f;">
+                                            <i class="fas fa-video fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Live Classes</h5>
+                                            <p class="mb-0 small">Participate in interactive video sessions</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex">
+                                        <div class="feature-icon bg-white rounded-circle p-3 me-3" style="width: 45px; height: 45px; color: #2d7d2f;">
+                                            <i class="fas fa-brain fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">AI Assistance</h5>
+                                            <p class="mb-0 small">Get help from our intelligent AI tutor</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right side - Form -->
+                    <div class="col-lg-8">
+                        <div class="card-body p-4 p-lg-5">
+                            <div class="text-center mb-4">
+                                <h3 class="fw-bold mb-1">Create Your Account</h3>
+                                <p class="text-muted">Fill out the form below to get started</p>
+                            </div>
+                            
+                            <form method="post" class="user">
+                                {% csrf_token %}
+                                
+                                {% if form.non_field_errors %}
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" name="first_name" id="{{ form.first_name.id_for_label }}" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" placeholder="First Name" value="{{ form.first_name.value|default:'' }}" required>
+                                            <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                                            {% if form.first_name.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.first_name.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" name="last_name" id="{{ form.last_name.id_for_label }}" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" placeholder="Last Name" value="{{ form.last_name.value|default:'' }}" required>
+                                            <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                                            {% if form.last_name.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.last_name.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="text" name="username" id="{{ form.username.id_for_label }}" class="form-control {% if form.username.errors %}is-invalid{% endif %}" placeholder="Username" value="{{ form.username.value|default:'' }}" required>
+                                            <label for="{{ form.username.id_for_label }}">Username</label>
+                                            {% if form.username.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.username.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="email" name="email" id="{{ form.email.id_for_label }}" class="form-control {% if form.email.errors %}is-invalid{% endif %}" placeholder="Email Address" value="{{ form.email.value|default:'' }}" required>
+                                            <label for="{{ form.email.id_for_label }}">Email Address</label>
+                                            {% if form.email.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.email.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="password" name="password1" id="{{ form.password1.id_for_label }}" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" placeholder="Password" required>
+                                            <label for="{{ form.password1.id_for_label }}">Password</label>
+                                            {% if form.password1.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.password1.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            <div class="form-text small">
+                                                {{ form.password1.help_text }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <input type="password" name="password2" id="{{ form.password2.id_for_label }}" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" placeholder="Confirm Password" required>
+                                            <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                                            {% if form.password2.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.password2.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            <select name="role" id="{{ form.role.id_for_label }}" class="form-select {% if form.role.errors %}is-invalid{% endif %}" required>
+                                                {% for value, display in form.fields.role.choices %}
+                                                <option value="{{ value }}" {% if form.role.value == value %}selected{% endif %}>{{ display }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label for="{{ form.role.id_for_label }}">Role</label>
+                                            {% if form.role.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.role.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6" id="div_id_class_level">
+                                        <div class="form-floating mb-3">
+                                            <select name="class_level" id="{{ form.class_level.id_for_label }}" class="form-select {% if form.class_level.errors %}is-invalid{% endif %}" required>
+                                                {% for value, display in form.fields.class_level.choices %}
+                                                <option value="{{ value }}" {% if form.class_level.value == value %}selected{% elif forloop.first and not form.class_level.value %}selected{% endif %}>{{ display }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label for="{{ form.class_level.id_for_label }}">Class Level</label>
+                                            {% if form.class_level.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.class_level.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            <div class="form-text small">Required for all users</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input type="tel" name="phone_number" id="{{ form.phone_number.id_for_label }}" class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}" placeholder="Phone Number" value="{{ form.phone_number.value|default:'' }}">
+                                    <label for="{{ form.phone_number.id_for_label }}">Phone Number (Optional)</label>
+                                    {% if form.phone_number.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.phone_number.errors %}
+                                        {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <textarea name="bio" id="{{ form.bio.id_for_label }}" class="form-control {% if form.bio.errors %}is-invalid{% endif %}" placeholder="Bio" style="height: 100px">{{ form.bio.value|default:'' }}</textarea>
+                                    <label for="{{ form.bio.id_for_label }}">Bio (Optional)</label>
+                                    {% if form.bio.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.bio.errors %}
+                                        {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-floating mb-4">
+                                    <input type="url" name="profile_picture" id="{{ form.profile_picture.id_for_label }}" class="form-control {% if form.profile_picture.errors %}is-invalid{% endif %}" placeholder="Profile Picture URL" value="{{ form.profile_picture.value|default:'' }}">
+                                    <label for="{{ form.profile_picture.id_for_label }}">Profile Picture URL (Optional)</label>
+                                    {% if form.profile_picture.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.profile_picture.errors %}
+                                        {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                                    <label class="form-check-label" for="termsCheck">
+                                        I agree to the <a href="#" style="color: #2d7d2f;">Terms of Service</a> and <a href="#" style="color: #2d7d2f;">Privacy Policy</a>
+                                    </label>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg w-100 py-3 mb-3">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </button>
+                                
+                                <div class="text-center">
+                                    <p class="mb-0">Already have an account? <a href="{% url 'login' %}" class="fw-bold" style="color: #2d7d2f;">Sign In</a></p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label,
+    .form-floating > .form-select ~ label {
+        color: #0d6efd;
+        font-weight: 500;
+    }
+    
+    .feature-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        border-radius: 0.5rem;
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    // This script ensures class level is required for students
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('id_role');
+        const classLevelGroup = document.getElementById('div_id_class_level');
+        const classLevelSelect = document.getElementById('id_class_level');
+        
+        function toggleClassLevel() {
+            if (roleSelect.value === 'student') {
+                classLevelGroup.classList.remove('d-none');
+                classLevelSelect.setAttribute('required', 'required');
+            } else {
+                classLevelGroup.classList.add('d-none');
+                classLevelSelect.removeAttribute('required');
+            }
+        }
+        
+        // Set initial state
+        toggleClassLevel();
+        
+        // Add event listener for changes
+        roleSelect.addEventListener('change', toggleClassLevel);
+    });
+</script>
+{% endblock %}
+{% endblock %}

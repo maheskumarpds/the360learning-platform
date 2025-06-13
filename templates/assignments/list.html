@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}Assignments - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-tasks me-2"></i>Assignments</h2>
+        {% if user.userprofile.role != 'student' %}
+        <a href="{% url 'assignment_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Create Assignment
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Active Assignments -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Active Assignments</h5>
+        </div>
+        <div class="card-body">
+            {% if active_page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Class Level</th>
+                            <th>Difficulty</th>
+                            <th>Due Date</th>
+                            {% if user.userprofile.role == 'student' %}
+                            <th>Status</th>
+                            {% else %}
+                            <th>Created By</th>
+                            {% endif %}
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in active_page_obj %}
+                        <tr class="align-middle">
+                            <td><strong>{{ assignment.title }}</strong></td>
+                            <td>{{ assignment.subject.name }}</td>
+                            <td>{{ assignment.class_level|class_level_display }}</td>
+                            <td>
+                                {% if assignment.difficulty == 'easy' %}
+                                <span class="badge bg-success">Easy</span>
+                                {% elif assignment.difficulty == 'medium' %}
+                                <span class="badge bg-warning text-dark">Medium</span>
+                                {% else %}
+                                <span class="badge bg-danger">Hard</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>{{ assignment.due_date|date:"M d, Y" }}</div>
+                                <small class="text-{% if assignment.is_past_due %}danger{% else %}primary{% endif %}">
+                                    {{ assignment.due_date|time_until }}
+                                </small>
+                            </td>
+                            {% if user.userprofile.role == 'student' %}
+                            <td>
+                                {% if assignment.id in submissions %}
+                                <span class="badge bg-success">Submitted</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Not Submitted</span>
+                                {% endif %}
+                            </td>
+                            {% else %}
+                            <td>{{ assignment.created_by.get_full_name|default:assignment.created_by.username }}</td>
+                            {% endif %}
+                            <td>
+                                <div class="d-flex">
+                                    <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-sm btn-outline-primary me-2">
+                                        View
+                                    </a>
+                                    {% if user.userprofile.role == 'student' and assignment.id not in submissions %}
+                                    <a href="{% url 'assignment_submit' assignment.id %}" class="btn btn-sm btn-primary">
+                                        Submit
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if active_page_obj.paginator.num_pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if active_page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?active_page=1{% if past_page %}&past_page={{ past_page }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?active_page={{ active_page_obj.previous_page_number }}{% if past_page %}&past_page={{ past_page }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in active_page_obj.paginator.page_range %}
+                        {% if active_page_obj.number == i %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                        {% elif i > active_page_obj.number|add:'-3' and i < active_page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?active_page={{ i }}{% if past_page %}&past_page={{ past_page }}{% endif %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if active_page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?active_page={{ active_page_obj.next_page_number }}{% if past_page %}&past_page={{ past_page }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?active_page={{ active_page_obj.paginator.num_pages }}{% if past_page %}&past_page={{ past_page }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h4 class="text-muted mb-3">No active assignments</h4>
+                {% if user.userprofile.role != 'student' %}
+                <a href="{% url 'assignment_create' %}" class="btn btn-primary">Create Assignment</a>
+                {% else %}
+                <p>No assignments are currently due. Check back later.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Past Assignments -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Past Assignments</h5>
+        </div>
+        <div class="card-body">
+            {% if past_page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Class Level</th>
+                            <th>Difficulty</th>
+                            <th>Due Date</th>
+                            {% if user.userprofile.role == 'student' %}
+                            <th>Status</th>
+                            {% else %}
+                            <th>Created By</th>
+                            {% endif %}
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in past_page_obj %}
+                        <tr class="align-middle">
+                            <td><strong>{{ assignment.title }}</strong></td>
+                            <td>{{ assignment.subject.name }}</td>
+                            <td>{{ assignment.class_level|class_level_display }}</td>
+                            <td>
+                                {% if assignment.difficulty == 'easy' %}
+                                <span class="badge bg-success">Easy</span>
+                                {% elif assignment.difficulty == 'medium' %}
+                                <span class="badge bg-warning text-dark">Medium</span>
+                                {% else %}
+                                <span class="badge bg-danger">Hard</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>{{ assignment.due_date|date:"M d, Y" }}</div>
+                                <small class="text-danger">Past due</small>
+                            </td>
+                            {% if user.userprofile.role == 'student' %}
+                            <td>
+                                {% if assignment.id in submissions %}
+                                <span class="badge bg-success">Submitted</span>
+                                {% else %}
+                                <span class="badge bg-danger">Not Submitted</span>
+                                {% endif %}
+                            </td>
+                            {% else %}
+                            <td>{{ assignment.created_by.get_full_name|default:assignment.created_by.username }}</td>
+                            {% endif %}
+                            <td>
+                                <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-sm btn-outline-secondary">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if past_page_obj.paginator.num_pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if past_page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?past_page=1{% if active_page %}&active_page={{ active_page }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?past_page={{ past_page_obj.previous_page_number }}{% if active_page %}&active_page={{ active_page }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in past_page_obj.paginator.page_range %}
+                        {% if past_page_obj.number == i %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                        {% elif i > past_page_obj.number|add:'-3' and i < past_page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?past_page={{ i }}{% if active_page %}&active_page={{ active_page }}{% endif %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if past_page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?past_page={{ past_page_obj.next_page_number }}{% if active_page %}&active_page={{ active_page }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?past_page={{ past_page_obj.paginator.num_pages }}{% if active_page %}&active_page={{ active_page }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3">
+                    <i class="fas fa-history"></i>
+                </div>
+                <h4 class="text-muted mb-3">No past assignments</h4>
+                <p>Past assignments will appear here after their due dates.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Recording - the360learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Upload Recording</h1>
+        <a href="{% url 'recordings_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Recordings
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">Title *</label>
+                            <input type="text" name="title" id="id_title" class="form-control {% if form.title.errors %}is-invalid{% endif %}" required>
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            <textarea name="description" id="id_description" rows="3" class="form-control {% if form.description.errors %}is-invalid{% endif %}"></textarea>
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_subject" class="form-label">Subject *</label>
+                                <select name="subject" id="id_subject" class="form-select {% if form.subject.errors %}is-invalid{% endif %}" required>
+                                    <option value="">Select a subject</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.subject.errors %}
+                                <div class="invalid-feedback">{{ form.subject.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="id_class_level" class="form-label">Class Level *</label>
+                                <select name="class_level" id="id_class_level" class="form-select {% if form.class_level.errors %}is-invalid{% endif %}" required>
+                                    <option value="">Select a class level</option>
+                                    {% for code, name in class_levels %}
+                                    <option value="{{ code }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.class_level.errors %}
+                                <div class="invalid-feedback">{{ form.class_level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_recorded_date" class="form-label">Recorded Date *</label>
+                                <input type="date" name="recorded_date" id="id_recorded_date" class="form-control {% if form.recorded_date.errors %}is-invalid{% endif %}" required value="{{ today_date|date:'Y-m-d' }}">
+                                {% if form.recorded_date.errors %}
+                                <div class="invalid-feedback">{{ form.recorded_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="id_duration_minutes" class="form-label">Duration (minutes) *</label>
+                                <input type="number" name="duration_minutes" id="id_duration_minutes" class="form-control {% if form.duration_minutes.errors %}is-invalid{% endif %}" min="1" required>
+                                {% if form.duration_minutes.errors %}
+                                <div class="invalid-feedback">{{ form.duration_minutes.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_recording_url" class="form-label">Recording URL *</label>
+                            <input type="url" name="recording_url" id="id_recording_url" class="form-control {% if form.recording_url.errors %}is-invalid{% endif %}" placeholder="https://example.com/recording.mp4" required>
+                            {% if form.recording_url.errors %}
+                            <div class="invalid-feedback">{{ form.recording_url.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Enter a direct URL to the video file. YouTube, Vimeo, and other streaming platforms are supported.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_thumbnail_url" class="form-label">Thumbnail URL</label>
+                            <input type="url" name="thumbnail_url" id="id_thumbnail_url" class="form-control {% if form.thumbnail_url.errors %}is-invalid{% endif %}" placeholder="https://example.com/thumbnail.jpg">
+                            {% if form.thumbnail_url.errors %}
+                            <div class="invalid-feedback">{{ form.thumbnail_url.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Optional: Enter a URL for a thumbnail image.</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i> Upload Recording
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Upload Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li class="mb-2">Supported video formats: MP4, WebM, and most standard web video formats</li>
+                        <li class="mb-2">Maximum recommended file size: 1GB</li>
+                        <li class="mb-2">For best quality, use a resolution of 720p or higher</li>
+                        <li class="mb-2">Include descriptive titles to help others find your recording</li>
+                        <li class="mb-2">Make sure the URL is publicly accessible and doesn't require login</li>
+                        <li class="mb-2">For best compatibility, use direct video file URLs</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Prefer Zoom Import?</h5>
+                </div>
+                <div class="card-body">
+                    <p>If you have recordings on Zoom Cloud, you can easily import them directly.</p>
+                    <div class="d-grid">
+                        <a href="{% url 'import_zoom_recording' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-file-import me-2"></i> Import from Zoom
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

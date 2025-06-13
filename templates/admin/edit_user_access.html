@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User Access - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'user_management' %}">User Management</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit {{ target_user.username }}</li>
+            </ol>
+        </nav>
+        <a href="{% url 'user_management' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to User List
+        </a>
+    </div>
+    
+    <!-- User Information -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>User Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Username:</strong> {{ target_user.username }}</p>
+                            <p><strong>Name:</strong> {{ target_user.get_full_name|default:"Not provided" }}</p>
+                            <p><strong>Email:</strong> {{ target_user.email|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Role:</strong> {{ target_user.userprofile.get_role_display }}</p>
+                            <p><strong>Class Level:</strong> {{ target_user.userprofile.get_class_level_display|default:"None" }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge {% if target_user.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {% if target_user.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Access Management Form -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-key me-2"></i>Access Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.role.id_for_label }}" class="form-label">Role <span class="text-danger">*</span></label>
+                                <select name="role" id="{{ form.role.id_for_label }}" class="form-select {% if form.role.errors %}is-invalid{% endif %}">
+                                    {% for value, display in form.fields.role.choices %}
+                                    <option value="{{ value }}" {% if form.role.value == value %}selected{% endif %}>{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.role.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.role.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">This determines what permissions the user has in the system.</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.class_level.id_for_label }}" class="form-label">Class Level</label>
+                                <select name="class_level" id="{{ form.class_level.id_for_label }}" class="form-select {% if form.class_level.errors %}is-invalid{% endif %}">
+                                    <option value="">None</option>
+                                    {% for value, display in form.fields.class_level.choices %}
+                                    <option value="{{ value }}" {% if form.class_level.value == value %}selected{% endif %}>{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.class_level.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.class_level.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">The class level determines what content the user can access.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" name="first_name" id="first_name" class="form-control" value="{{ target_user.first_name }}">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" name="last_name" id="last_name" class="form-control" value="{{ target_user.last_name }}">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" name="email" id="email" class="form-control" value="{{ target_user.email }}">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mt-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {% if target_user.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            Active Account
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Inactive accounts cannot log in to the system.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                                <textarea name="bio" id="{{ form.bio.id_for_label }}" class="form-control" rows="3">{{ form.bio.value|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                                <a href="{% url 'user_management' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Warning Card -->
+    <div class="card shadow-sm border-warning mt-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Important Notes</h5>
+        </div>
+        <div class="card-body">
+            <ul class="mb-0">
+                <li><strong>Role changes</strong> will immediately affect what the user can access in the system.</li>
+                <li><strong>Changing class level</strong> for students and teachers will change what content they can view and manage.</li>
+                <li><strong>Deactivating accounts</strong> will prevent users from logging in but won't delete their data.</li>
+                <li>Users cannot change their own roles or deactivate their own accounts through this interface.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

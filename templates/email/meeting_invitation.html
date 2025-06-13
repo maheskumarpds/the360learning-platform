@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .header {
+            background-color: #4e73df;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid #eee;
+        }
+        
+        .details {
+            margin: 20px 0;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .details p {
+            margin: 5px 0;
+        }
+        
+        .button {
+            display: inline-block;
+            background-color: #4e73df;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Virtual Class Invitation</h1>
+        </div>
+        
+        <div class="content">
+            {% if is_targeted_invitation %}
+            <p>You have been <strong>personally invited</strong> to attend a virtual class on the the360learning platform.</p>
+            {% else %}
+            <p>You have been invited to attend a virtual class on the the360learning platform.</p>
+            {% endif %}
+            
+            <div class="details">
+                <h2>{{ meeting.title }}</h2>
+                <p><strong>Subject:</strong> {{ subject_name }}</p>
+                <p><strong>Class Level:</strong> {{ class_level }}</p>
+                <p><strong>Host:</strong> {{ host_name }}</p>
+                <p><strong>Platform:</strong> {{ meeting.get_platform_display }}</p>
+                <p><strong>Date:</strong> {{ meeting.start_time|date:"l, F j, Y" }}</p>
+                <p><strong>Time:</strong> {{ meeting.start_time|time:"g:i A" }} - {{ meeting.end_time|time:"g:i A" }} UTC</p>
+                {% if meeting.meeting_password %}
+                <p><strong>Password:</strong> {{ meeting.meeting_password }}</p>
+                {% endif %}
+                {% if meeting.description %}
+                <p><strong>Description:</strong> {{ meeting.description }}</p>
+                {% endif %}
+                
+                {% if is_targeted_invitation %}
+                <div class="special-note" style="background-color: #f0f9ff; border-left: 4px solid #0d6efd; padding: 10px; margin: 15px 0;">
+                    <p style="font-style: italic; margin: 0;">
+                        <strong>Note:</strong> You have been specifically selected to participate in this meeting. Your attendance is highly valued.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if meeting.meeting_link %}
+            <div style="text-align: center;">
+                <a href="{{ meeting.meeting_link }}" class="button">Join Meeting</a>
+            </div>
+            {% endif %}
+            
+            <p>Please ensure you have the necessary software installed before the class begins.</p>
+            
+            <p>If you have any questions, please contact the host directly.</p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message from the the360learning platform. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}the360learning - Educational Platform{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <link href="/static/css/management.css" rel="stylesheet">
+    
+    <style>
+        /* Apply fonts globally */
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Navbar styling that matches the screenshot */
+        .navbar-custom {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 0;
+            height: 60px;
+            overflow: visible;
+            z-index: 1030;
+            background-color: #2d7d2f !important;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            font-size: 1.2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding-left: 1rem;
+            padding-right: 1.5rem;
+        }
+        
+        .navbar-brand i {
+            font-size: 1.4rem;
+            margin-right: 0.5rem;
+        }
+        
+        /* Navigation items */
+        .navbar-nav {
+            height: 60px;
+        }
+        
+        .navbar-nav .nav-item {
+            display: flex;
+            align-items: center;
+            height: 60px;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 0.85rem;
+            font-weight: 500;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 0.9rem !important;
+        }
+        
+        .nav-link:hover {
+            color: #fff !important;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Active state with yellow bottom border */
+        .nav-link.active {
+            color: #fff !important;
+            font-weight: 600 !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            position: relative;
+        }
+        
+        .nav-link.active:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #ffc107;
+        }
+        
+        /* Avatar styling */
+        .avatar-circle {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Dropdown menus */
+        .dropdown-menu-dark {
+            background-color: #2c3136;
+            border: none;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            padding: 0.6rem 0;
+            border-radius: 0.5rem;
+            margin-top: 0.3rem !important;
+        }
+        
+        .dropdown-menu-dark .dropdown-item {
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.6rem 1rem;
+            transition: all 0.15s ease;
+            font-size: 0.85rem;
+        }
+        
+        .dropdown-menu-dark .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .dropdown-header {
+            padding: 0.6rem 1rem;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        
+        /* Notification badge positioning */
+        .notification-badge {
+            padding: 0.25rem 0.4rem;
+            font-size: 0.7rem;
+            border-radius: 50%;
+            top: 8px !important;
+            right: 0 !important;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 992px) {
+            .nav-link {
+                height: auto;
+                padding: 0.6rem 1rem !important;
+            }
+            
+            .nav-link.active:after {
+                display: none;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body data-user-role="{% if user.is_authenticated %}{{ user.userprofile.role }}{% endif %}">
+    <!-- Navigation Bar - Horizontal Top Strip Style -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary navbar-custom">
+        <div class="container-fluid">
+            <!-- Brand logo -->
+            <a class="navbar-brand fw-bold me-3" href="{% url 'home' %}">
+                <i class="fas fa-graduation-cap"></i>the360<span class="text-warning">learning</span>
+            </a>
+            
+            <!-- Mobile toggle button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Main navigation content -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                {% if user.is_authenticated %}
+                <!-- Horizontal top navigation layout -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link px-3 {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                           href="{% url 'dashboard' %}">
+                           <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <!-- Learning Resources -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-3 {% if request.resolver_match.url_name in 'materials_list,recordings_list' %}active{% endif %}" 
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           <i class="fas fa-book me-1"></i> Learning Resources
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{% url 'materials_list' %}">
+                                <i class="fas fa-file-alt fa-sm fa-fw me-2"></i>Study Materials
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'recordings_list' %}">
+                                <i class="fas fa-video fa-sm fa-fw me-2"></i>Recorded Sessions
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Assessments -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-3 {% if request.resolver_match.url_name in 'assignments_list,quizzes_list' %}active{% endif %}" 
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           <i class="fas fa-tasks me-1"></i> Assessments
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{% url 'assignments_list' %}">
+                                <i class="fas fa-clipboard-list fa-sm fa-fw me-2"></i>Homework & Projects
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'quizzes_list' %}">
+                                <i class="fas fa-question-circle fa-sm fa-fw me-2"></i>Quizzes & Assessments
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Live Classes -->
+                    <li class="nav-item">
+                        <a class="nav-link px-3 {% if request.resolver_match.url_name == 'video_conferences_list' %}active{% endif %}" 
+                           href="{% url 'video_conferences_list' %}">
+                           <i class="fas fa-video me-1"></i> Live Classes
+                        </a>
+                    </li>
+                    
+                    <!-- AI Tutor -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-3 {% if 'ai_tutor' in request.resolver_match.url_name %}active{% endif %}" 
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           <i class="fas fa-robot me-1"></i> AI Tutor
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{% url 'ai_tutor_chat' %}">
+                                <i class="fas fa-comments fa-sm fa-fw me-2"></i>Chat with AI
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'ai_tutor_history' %}">
+                                <i class="fas fa-history fa-sm fa-fw me-2"></i>Chat History
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Management (Admin and Teacher) - Displayed in top navigation -->
+                    {% if is_admin or is_teacher %}
+                    <li class="nav-item dropdown" data-menu-type="management">
+                        <a class="nav-link dropdown-toggle px-3 {% if 'subject' in request.resolver_match.url_name or 'class_subject' in request.resolver_match.url_name or 'user_management' in request.resolver_match.url_name %}active{% endif %}" 
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           <i class="fas fa-cogs me-1"></i> Management
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <!-- Subject Management - Available to both Admin and Teacher -->
+                            <li><a class="dropdown-item" href="{% url 'subject_list' %}">
+                                <i class="fas fa-book fa-sm fa-fw me-2"></i>Subject Management
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'class_subjects_list' %}">
+                                <i class="fas fa-book-reader fa-sm fa-fw me-2"></i>Class-Subject Assignments
+                            </a></li>
+                            
+                            {% if is_admin %}
+                            <li><hr class="dropdown-divider bg-light opacity-25"></li>
+                            <li><a class="dropdown-item" href="{% url 'user_management' %}">
+                                <i class="fas fa-users-cog fa-sm fa-fw me-2"></i>User Management
+                            </a></li>
+                            {% endif %}
+                            
+                            <li><hr class="dropdown-divider bg-light opacity-25"></li>
+                            <li><a class="dropdown-item" href="{% url 'material_upload' %}">
+                                <i class="fas fa-file-upload fa-sm fa-fw me-2"></i>Upload Study Material
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'recording_upload' %}">
+                                <i class="fas fa-film fa-sm fa-fw me-2"></i>Upload Recorded Session
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'assignment_create' %}">
+                                <i class="fas fa-tasks fa-sm fa-fw me-2"></i>Create Assignment
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'quiz_create' %}">
+                                <i class="fas fa-question fa-sm fa-fw me-2"></i>Create Quiz
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'video_conference_create' %}">
+                                <i class="fas fa-calendar-plus fa-sm fa-fw me-2"></i>Schedule Conference
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Role Display removed as requested -->
+                </ul>
+                
+                <!-- Right user nav section -->
+                <div class="d-flex align-items-center">
+                    <!-- Notifications icon (example) -->
+                    <div class="me-2 d-flex align-items-center">
+                        <a class="nav-link position-relative px-2" href="#">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge">
+                                3
+                                <span class="visually-hidden">unread messages</span>
+                            </span>
+                        </a>
+                    </div>
+                    
+                    <!-- User dropdown -->
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center px-2" href="#" id="userDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="avatar-circle me-2">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <span class="d-none d-lg-inline text-white">{{ user.get_full_name|default:user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li class="dropdown-header text-white">
+                                <small class="d-block text-light">Signed in as</small>
+                                <strong>{{ user.username }}</strong>
+                                <div class="text-muted small">{{ user.userprofile.get_role_display }}</div>
+                            </li>
+                            <li><hr class="dropdown-divider bg-light opacity-25"></li>
+                            <li><a class="dropdown-item" href="{% url 'profile_view' user.username %}">
+                                <i class="fas fa-user fa-sm fa-fw me-2"></i>
+                                Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'profile_edit' %}">
+                                <i class="fas fa-user-edit fa-sm fa-fw me-2"></i>
+                                Edit Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'user_settings' %}">
+                                <i class="fas fa-cogs fa-sm fa-fw me-2"></i>
+                                Settings
+                            </a></li>
+                            <li><hr class="dropdown-divider bg-light opacity-25"></li>
+                            <li>
+                                <form id="logoutForm" action="{% url 'logout' %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-sign-out-alt fa-sm fa-fw me-2"></i>
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <div class="ms-auto d-flex">
+                    <a class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'login' %}active{% endif %}" 
+                       href="{% url 'login' %}">
+                       <i class="fas fa-sign-in-alt me-1"></i> Login
+                    </a>
+                    <a class="nav-link d-flex align-items-center ms-2 {% if request.resolver_match.url_name == 'register' %}active{% endif %}" 
+                       href="{% url 'register' %}">
+                       <i class="fas fa-user-plus me-1"></i> Register
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h5 class="text-dark mb-3">the<span style="color: #2d7d2f;">360learning</span></h5>
+                    <p class="text-muted">
+                        A comprehensive educational platform designed for CBSE students and English Communication classes.
+                    </p>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h6 class="text-dark mb-3">Navigation</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'home' %}" class="text-muted">Home</a></li>
+                        {% if user.is_authenticated %}
+                        <li class="mb-2"><a href="{% url 'dashboard' %}" class="text-muted">Dashboard</a></li>
+                        <li class="mb-2"><a href="{% url 'materials_list' %}" class="text-muted">Study Materials</a></li>
+                        {% else %}
+                        <li class="mb-2"><a href="{% url 'login' %}" class="text-muted">Login</a></li>
+                        <li class="mb-2"><a href="{% url 'register' %}" class="text-muted">Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h6 class="text-dark mb-3">Resources</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'materials_list' %}" class="text-muted">Study Materials</a></li>
+                        <li class="mb-2"><a href="{% url 'assignments_list' %}" class="text-muted">Assignments</a></li>
+                        <li class="mb-2"><a href="{% url 'quizzes_list' %}" class="text-muted">Quizzes & Assessments</a></li>
+                        <li class="mb-2"><a href="{% url 'recordings_list' %}" class="text-muted">Recordings</a></li>
+                        {% if user.is_authenticated and user.userprofile.role == 'admin' or user.userprofile.role == 'teacher' %}
+                        <li class="mb-2"><a href="{% url 'subject_list' %}" class="text-muted">Subjects</a></li>
+                        <li class="mb-2"><a href="{% url 'class_subjects_list' %}" class="text-muted">Class Subjects</a></li>
+                        {% endif %}
+                        <li class="mb-2"><a href="{% url 'ai_tutor_chat' %}" class="text-muted">AI Tutor</a></li>
+                        <li class="mb-2"><a href="{% url 'ai_tutor_history' %}" class="text-muted">AI Chat History</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h6 class="text-dark mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-muted">Help Center</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted">Contact Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted">Privacy Policy</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="mt-4 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    &copy; 2025 the360learning. All rights reserved.
+                </div>
+                <div class="social-icons">
+                    <a href="#" class="text-muted me-2"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-muted me-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-muted me-2"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-muted"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/navbar.js"></script>
+    <script src="/static/js/role_debug.js"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

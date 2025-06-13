@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}Assignment: {{ assignment.title }} - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'assignments_list' %}">Assignments</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ assignment.title }}</li>
+            </ol>
+        </nav>
+        <a href="{% url 'assignments_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Assignments
+        </a>
+    </div>
+    
+    <!-- Assignment Detail -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Main Content -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">{{ assignment.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-primary me-2">{{ assignment.subject.name }}</span>
+                        <span class="badge bg-secondary me-2">{{ assignment.class_level|class_level_display }}</span>
+                        {% if assignment.difficulty == 'easy' %}
+                        <span class="badge bg-success">Easy</span>
+                        {% elif assignment.difficulty == 'medium' %}
+                        <span class="badge bg-warning text-dark">Medium</span>
+                        {% else %}
+                        <span class="badge bg-danger">Hard</span>
+                        {% endif %}
+                        
+                        <div class="ms-auto">
+                            <span class="badge bg-info">{{ assignment.total_points }} points</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert {% if assignment.is_past_due %}alert-danger{% else %}alert-primary{% endif %} d-flex align-items-center">
+                        <div>
+                            <i class="fas {% if assignment.is_past_due %}fa-exclamation-circle{% else %}fa-clock{% endif %} me-2"></i>
+                        </div>
+                        <div>
+                            <strong>Due:</strong> {{ assignment.due_date|date:"F j, Y - g:i A" }}
+                            {% if assignment.is_past_due %}
+                            <span class="ms-2">(Past due)</span>
+                            {% else %}
+                            <span class="ms-2">({{ assignment.due_date|time_until }})</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <h5 class="card-title mb-3">Description</h5>
+                    <p class="card-text">{{ assignment.description }}</p>
+                    
+                    <h5 class="card-title mb-3 mt-4">Instructions</h5>
+                    <div class="card-text mb-4">
+                        {{ assignment.instructions|linebreaks }}
+                    </div>
+                    
+                    {% if assignment.attachment_url %}
+                    <div class="mb-4">
+                        <h5 class="card-title mb-3">Assignment Materials</h5>
+                        <a href="{{ assignment.attachment_url }}" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-2"></i>View/Download Assignment Material
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if profile.role == 'student' %}
+                        {% if submission %}
+                        <div class="alert alert-success mt-4">
+                            <h5><i class="fas fa-check-circle me-2"></i>Submission Status</h5>
+                            <p class="mb-0">
+                                You submitted this assignment on {{ submission.submitted_at|date:"F j, Y - g:i A" }}
+                                {% if submission.is_late %}
+                                <span class="badge bg-warning text-dark ms-2">Late submission</span>
+                                {% endif %}
+                            </p>
+                            
+                            {% if submission.is_graded %}
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Points Earned</h6>
+                                    <p class="mb-0">{{ submission.points_earned }} / {{ assignment.total_points }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Grade Percentage</h6>
+                                    <p class="mb-0">{{ submission.points_earned|floatformat:0 }}%</p>
+                                </div>
+                            </div>
+                            {% if submission.feedback %}
+                            <hr>
+                            <h6>Teacher Feedback</h6>
+                            <p class="mb-0">{{ submission.feedback }}</p>
+                            {% endif %}
+                            {% else %}
+                            <hr>
+                            <p class="mb-0"><i class="fas fa-info-circle me-2"></i>Your submission is awaiting grading.</p>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="d-grid mt-4">
+                            <a href="{% url 'assignment_submit' assignment.id %}" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Assignment
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Teacher View - Submissions -->
+            {% if profile.role != 'student' and submissions %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Student Submissions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Submission Date</th>
+                                    <th>Status</th>
+                                    <th>Grade</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sub in submissions %}
+                                <tr class="align-middle">
+                                    <td>{{ sub.student.get_full_name|default:sub.student.username }}</td>
+                                    <td>{{ sub.submitted_at|date:"M d, Y - h:i A" }}</td>
+                                    <td>
+                                        {% if sub.is_graded %}
+                                        <span class="badge bg-success">Graded</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                        {% if sub.is_late %}
+                                        <span class="badge bg-danger ms-1">Late</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if sub.is_graded %}
+                                        {{ sub.points_earned }} / {{ assignment.total_points }}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#submissionModal{{ sub.id }}">
+                                                View
+                                            </button>
+                                            {% if not sub.is_graded %}
+                                            <a href="{% url 'submission_grade' sub.id %}" class="btn btn-sm btn-primary">
+                                                Grade
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Modal for submission details -->
+                                        <div class="modal fade" id="submissionModal{{ sub.id }}" tabindex="-1" aria-labelledby="submissionModalLabel{{ sub.id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="submissionModalLabel{{ sub.id }}">
+                                                            Submission by {{ sub.student.get_full_name|default:sub.student.username }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <h6>Submission Text</h6>
+                                                            <div class="p-3 bg-light rounded">
+                                                                {{ sub.submission_text|linebreaks|default:"No text submission." }}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {% if sub.attachment_url %}
+                                                        <div class="mb-3">
+                                                            <h6>Attachment</h6>
+                                                            <a href="{{ sub.attachment_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-external-link-alt me-2"></i>View Attachment
+                                                            </a>
+                                                        </div>
+                                                        {% endif %}
+                                                        
+                                                        <div class="d-flex justify-content-between text-muted small">
+                                                            <div>Submitted: {{ sub.submitted_at|date:"F j, Y - g:i A" }}</div>
+                                                            {% if sub.is_late %}
+                                                            <div class="text-danger">Late submission</div>
+                                                            {% endif %}
+                                                        </div>
+                                                        
+                                                        {% if sub.is_graded %}
+                                                        <hr>
+                                                        <div class="mb-3">
+                                                            <h6>Grade</h6>
+                                                            <p>{{ sub.points_earned }} / {{ assignment.total_points }} points</p>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <h6>Feedback</h6>
+                                                            <p>{{ sub.feedback|linebreaks|default:"No feedback provided." }}</p>
+                                                        </div>
+                                                        
+                                                        <div class="text-muted small">
+                                                            Graded by {{ sub.graded_by.get_full_name|default:sub.graded_by.username }} on {{ sub.graded_at|date:"F j, Y" }}
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        {% if not sub.is_graded %}
+                                                        <a href="{% url 'submission_grade' sub.id %}" class="btn btn-primary">
+                                                            Grade Submission
+                                                        </a>
+                                                        {% endif %}
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Assignment Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Assignment Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Created By:</strong>
+                        <p>{{ assignment.created_by.get_full_name|default:assignment.created_by.username }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Created Date:</strong>
+                        <p>{{ assignment.created_at|date:"F j, Y" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Subject:</strong>
+                        <p>{{ assignment.subject.name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Class Level:</strong>
+                        <p>{{ assignment.class_level|class_level_display }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Difficulty:</strong>
+                        <p>{{ assignment.get_difficulty_display }}</p>
+                    </div>
+                    <div>
+                        <strong>Total Points:</strong>
+                        <p>{{ assignment.total_points }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Tutor Help -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p>Having trouble with this assignment? Our AI Tutor can help you understand the concepts and provide guidance.</p>
+                    <a href="{% url 'ai_tutor_chat' %}?subject={{ assignment.subject.id }}" class="btn btn-primary w-100">
+                        <i class="fas fa-question-circle me-2"></i>Ask AI Tutor
+                    </a>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-3">Study Resources</h6>
+                    <a href="{% url 'materials_list' %}?subject={{ assignment.subject.id }}&class_level={{ assignment.class_level }}" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-book me-2"></i>Find Study Materials
+                    </a>
+                    <a href="{% url 'recordings_list' %}?subject={{ assignment.subject.id }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-video me-2"></i>Watch Recorded Classes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

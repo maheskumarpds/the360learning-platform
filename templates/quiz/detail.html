@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}{{ quiz.title }} - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-between mb-4">
+        <div class="col-auto">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'quizzes_list' %}">Quizzes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ quiz.title }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-auto">
+            {% if can_edit %}
+            <a href="{% url 'quiz_edit' quiz.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit me-1"></i>Edit Quiz
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h4 class="mb-0">{{ quiz.title }}</h4>
+                </div>
+                <div class="ms-auto">
+                    <span class="badge bg-{{ quiz.is_active|yesno:'success,secondary' }}">
+                        {{ quiz.is_active|yesno:'Active,Inactive' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="mb-4">{{ quiz.description|linebreaks }}</p>
+                    
+                    <h5 class="mb-3">Quiz Details</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>Subject:</span>
+                                    <span class="style="color: #2d7d2f;"">{{ quiz.subject.name }}</span>
+                                </li>
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>Class Level:</span>
+                                    <span class="style="color: #2d7d2f;"">{{ quiz.class_level|class_level_display }}</span>
+                                </li>
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>Questions:</span>
+                                    <span class="style="color: #2d7d2f;"">{{ question_count }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>Time Limit:</span>
+                                    <span class="style="color: #2d7d2f;"">
+                                        {% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No time limit{% endif %}
+                                    </span>
+                                </li>
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>Passing Score:</span>
+                                    <span class="style="color: #2d7d2f;"">{{ quiz.passing_score }}%</span>
+                                </li>
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>Created By:</span>
+                                    <span class="style="color: #2d7d2f;"">{{ quiz.created_by.get_full_name|default:quiz.created_by.username }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body text-center">
+                            <div class="mb-4">
+                                <i class="fas fa-puzzle-piece fa-4x style="color: #2d7d2f;""></i>
+                            </div>
+                            
+                            {% if profile.role == 'student' %}
+                                {% if previous_attempts %}
+                                    <div class="mb-3">
+                                        <h5>Your Previous Results</h5>
+                                        {% for attempt in previous_attempts|slice:":3" %}
+                                            <div class="d-flex align-items-center justify-content-between border-bottom py-2">
+                                                <span>{{ attempt.completed_at|date:"M d, Y" }}</span>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= quiz.passing_score %}bg-warning{% else %}bg-danger{% endif %} me-2">
+                                                        {{ attempt.score }}%
+                                                    </span>
+                                                    <a href="{% url 'quiz_results' quiz.id attempt.id %}" class="btn btn-sm btn-outline-secondary">View</a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            
+                                {% if quiz.is_active %}
+                                    <a href="{% url 'quiz_take' quiz.id %}" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-play-circle me-2"></i>Start Quiz
+                                    </a>
+                                    
+                                    {% if quiz.time_limit %}
+                                        <div class="alert alert-warning mt-3 mb-0">
+                                            <i class="fas fa-clock me-2"></i>
+                                            This quiz has a time limit of {{ quiz.time_limit }} minutes.
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="alert alert-secondary">
+                                        <i class="fas fa-lock me-2"></i>
+                                        This quiz is currently inactive.
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <h5 class="mb-3">Quiz Statistics</h5>
+                                <div class="mb-3">
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <div class="p-3 rounded-3 bg-white shadow-sm">
+                                                <div class="h4 mb-0">{{ quiz.completion_count }}</div>
+                                                <div class="small text-muted">Attempts</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="p-3 rounded-3 bg-white shadow-sm">
+                                                <div class="h4 mb-0">{{ quiz.avg_score|floatformat:1 }}%</div>
+                                                <div class="small text-muted">Avg. Score</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if can_edit %}
+                                    <div class="d-grid">
+                                        <a href="{% url 'quiz_edit' quiz.id %}" class="btn btn-primary">
+                                            <i class="fas fa-edit me-2"></i>Edit Questions
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+            <small class="text-muted">Created: {{ quiz.created_at|date:"M d, Y" }}</small>
+            <small class="text-muted">Last updated: {{ quiz.updated_at|date:"M d, Y" }}</small>
+        </div>
+    </div>
+    
+    <!-- Teacher/Admin Only: Question Preview -->
+    {% if profile.role != 'student' and can_edit and question_count > 0 %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Question Preview</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Question</th>
+                            <th>Correct Answer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question in quiz.questions.all|dictsort:"question_number" %}
+                        <tr>
+                            <td>{{ question.question_number }}</td>
+                            <td>{{ question.question_text }}</td>
+                            <td>
+                                {% if question.correct_option == 'a' %}{{ question.option_a }}
+                                {% elif question.correct_option == 'b' %}{{ question.option_b }}
+                                {% elif question.correct_option == 'c' %}{{ question.option_c }}
+                                {% elif question.correct_option == 'd' %}{{ question.option_d }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

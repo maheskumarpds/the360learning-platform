@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .header {
+            background-color: #4e73df;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid #eee;
+        }
+        
+        .details {
+            margin: 20px 0;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .details p {
+            margin: 5px 0;
+        }
+        
+        .button {
+            display: inline-block;
+            background-color: #4e73df;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+        
+        .difficulty {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .easy {
+            background-color: #1cc88a;
+        }
+        
+        .medium {
+            background-color: #f6c23e;
+        }
+        
+        .hard {
+            background-color: #e74a3b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Assignment</h1>
+        </div>
+        
+        <div class="content">
+            <p>A new assignment has been posted for you on the the360learning platform.</p>
+            
+            <div class="details">
+                <h2>{{ assignment.title }}</h2>
+                
+                <p>
+                    <strong>Subject:</strong> {{ subject_name }}
+                    <span class="difficulty {{ assignment.difficulty }}" style="margin-left: 10px;">
+                        {{ assignment.get_difficulty_display }}
+                    </span>
+                </p>
+                
+                <p><strong>Due Date:</strong> {{ due_date }}</p>
+                <p><strong>Total Points:</strong> {{ assignment.total_points }}</p>
+                <p><strong>Teacher:</strong> {{ teacher_name }}</p>
+                
+                {% if assignment.description %}
+                <p><strong>Description:</strong> {{ assignment.description }}</p>
+                {% endif %}
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="http://example.com/assignments/{{ assignment.id }}" class="button">View Assignment</a>
+            </div>
+            
+            <p>Please make sure to submit your work before the deadline.</p>
+            
+            <p>Good luck!</p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message from the the360learning platform. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

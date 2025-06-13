@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>the360learning - Welcome to the Platform</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2d7d2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #2d7d2f;
+        }
+        .button {
+            display: inline-block;
+            background-color: #2d7d2f;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .details {
+            background-color: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+        .feature-list {
+            background-color: #ecfdf5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .feature-list ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to the360learning!</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ user.first_name|default:user.username }},</p>
+            
+            <p>Thank you for signing up with the360learning - your comprehensive educational platform. We're excited to have you join our community!</p>
+            
+            <div class="details">
+                <h2>Your Account Details</h2>
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Role:</strong> {{ user_profile.get_role_display }}</p>
+                {% if user_profile.role == 'student' %}
+                <p><strong>Class Level:</strong> {{ user_profile.get_class_level_display }}</p>
+                {% endif %}
+                <p><strong>Date Joined:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+            </div>
+            
+            <p>Your account is now active, and you can start using the platform immediately.</p>
+            
+            <div class="feature-list">
+                <h2>What You Can Do With the360learning</h2>
+                <ul>
+                    {% if user_profile.role == 'student' %}
+                    <li>Access study materials tailored to your class level</li>
+                    <li>Join online video conferences for interactive learning</li>
+                    <li>Submit assignments and track your progress</li>
+                    <li>Use the AI Tutor to get personalized help with your studies</li>
+                    <li>Watch recorded sessions whenever you need to review</li>
+                    {% elif user_profile.role == 'teacher' %}
+                    <li>Upload and manage study materials for your classes</li>
+                    <li>Schedule and host online video conferences</li>
+                    <li>Create and grade assignments</li>
+                    <li>Track student progress and performance</li>
+                    <li>Manage subjects for your assigned classes</li>
+                    {% else %}
+                    <li>Full access to all platform features and administration</li>
+                    <li>Manage users, subjects, and class assignments</li>
+                    <li>Access all study materials across all class levels</li>
+                    <li>Schedule and manage video conferences</li>
+                    <li>Review system usage and analytics</li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <p>To get started, simply log in to your account using your username and password.</p>
+            
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            
+            <p>We look forward to helping you achieve your educational goals!</p>
+            
+            <p>Best regards,<br>The the360learning Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {% now "Y" %} the360learning. All rights reserved.</p>
+            <p>This email was sent to {{ user.email }} regarding your the360learning account.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+
+{% block title %}Schedule Video Class - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Schedule Video Class</h2>
+        <a href="{% url 'video_conferences_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Classes
+        </a>
+    </div>
+    
+    <!-- Create Conference Form -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Class Details</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" id="{{ form.title.id_for_label }}" class="form-control {% if form.title.errors %}is-invalid{% endif %}" value="{{ form.title.value|default:'' }}" required>
+                        {% if form.title.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.title.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Choose a descriptive title for your class</div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.subject.id_for_label }}" class="form-label">Subject <span class="text-danger">*</span></label>
+                        <select name="subject" id="{{ form.subject.id_for_label }}" class="form-select {% if form.subject.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in form.fields.subject.queryset %}
+                            <option value="{{ subject.id }}" {% if form.subject.value|stringformat:'i' == subject.id|stringformat:'i' %}selected{% endif %}>{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.subject.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.subject.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.class_level.id_for_label }}" class="form-label">Class Level <span class="text-danger">*</span></label>
+                        <select name="class_level" id="{{ form.class_level.id_for_label }}" class="form-select {% if form.class_level.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Class Level</option>
+                            {% for value, display in form.fields.class_level.choices %}
+                            <option value="{{ value }}" {% if form.class_level.value == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.class_level.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.class_level.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Participant Selection Section -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h6 class="mb-0"><i class="fas fa-users me-2"></i>Invite Specific Participants</h6>
+                            <div class="form-check form-switch ms-auto">
+                                <input class="form-check-input" type="checkbox" id="enable_participant_selection">
+                                <label class="form-check-label" for="enable_participant_selection">Enable</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" id="participant_selection_area" style="display: none;">
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i> By default, all students in the selected class level will be invited. 
+                                Use this option to invite specific participants instead.
+                            </small>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="{{ form.selected_participants.id_for_label }}" class="form-label">Select Participants</label>
+                                <select name="selected_participants" id="{{ form.selected_participants.id_for_label }}" 
+                                        class="form-select {% if form.selected_participants.errors %}is-invalid{% endif %}" 
+                                        multiple size="5">
+                                    {% for user in form.fields.selected_participants.queryset %}
+                                    <option value="{{ user.id }}" {% if user.id in form.selected_participants.value %}selected{% endif %}>
+                                        {{ user.get_full_name|default:user.username }} ({{ user.email }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.selected_participants.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.selected_participants.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.selected_participants.help_text }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        <textarea name="description" id="{{ form.description.id_for_label }}" class="form-control {% if form.description.errors %}is-invalid{% endif %}" rows="3">{{ form.description.value|default:'' }}</textarea>
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.description.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Provide details about what will be covered in this class</div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.platform.id_for_label }}" class="form-label">Platform <span class="text-danger">*</span></label>
+                        <select name="platform" id="{{ form.platform.id_for_label }}" class="form-select {% if form.platform.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Platform</option>
+                            {% for value, display in form.fields.platform.choices %}
+                            <option value="{{ value }}" {% if form.platform.value == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.platform.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.platform.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.is_recurring.id_for_label }}" class="form-label">Recurring Class</label>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="{{ form.is_recurring.id_for_label }}" name="is_recurring" {% if form.is_recurring.value %}checked{% endif %}>
+                            <label class="form-check-label" for="{{ form.is_recurring.id_for_label }}">This class repeats regularly</label>
+                        </div>
+                        {% if form.is_recurring.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.is_recurring.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.start_time.id_for_label }}" class="form-label">Start Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="start_time" id="{{ form.start_time.id_for_label }}" class="form-control {% if form.start_time.errors %}is-invalid{% endif %}" value="{{ form.start_time.value|date:'Y-m-d\TH:i' }}" required>
+                        {% if form.start_time.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.start_time.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.end_time.id_for_label }}" class="form-label">End Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="end_time" id="{{ form.end_time.id_for_label }}" class="form-control {% if form.end_time.errors %}is-invalid{% endif %}" value="{{ form.end_time.value|date:'Y-m-d\TH:i' }}" required>
+                        {% if form.end_time.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.end_time.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Meeting info fields - shown conditionally -->
+                <div id="manual_meeting_fields">
+                    <div id="div_id_meeting_link" class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.meeting_link.id_for_label }}" class="form-label">Meeting Link</label>
+                            <input type="url" name="meeting_link" id="{{ form.meeting_link.id_for_label }}" class="form-control {% if form.meeting_link.errors %}is-invalid{% endif %}" value="{{ form.meeting_link.value|default:'' }}">
+                            {% if form.meeting_link.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.meeting_link.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">The URL where students will join the meeting</div>
+                        </div>
+                    </div>
+                    
+                    <div id="div_id_meeting_id" class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.meeting_id.id_for_label }}" class="form-label">Meeting ID</label>
+                            <input type="text" name="meeting_id" id="{{ form.meeting_id.id_for_label }}" class="form-control {% if form.meeting_id.errors %}is-invalid{% endif %}" value="{{ form.meeting_id.value|default:'' }}">
+                            {% if form.meeting_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.meeting_id.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div id="div_id_meeting_password" class="col-md-6">
+                            <label for="{{ form.meeting_password.id_for_label }}" class="form-label">Meeting Password</label>
+                            <input type="text" name="meeting_password" id="{{ form.meeting_password.id_for_label }}" class="form-control {% if form.meeting_password.errors %}is-invalid{% endif %}" value="{{ form.meeting_password.value|default:'' }}">
+                            {% if form.meeting_password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.meeting_password.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success mb-3">
+                    <i class="fas fa-check-circle me-2"></i> When you schedule your class, a new Zoom meeting will be automatically created in your connected Zoom account.
+                    <div class="mt-1 small">The meeting link, ID, and password will be automatically populated - no need to enter them manually.</div>
+                </div>
+                
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-envelope me-2"></i> Email notifications will be sent automatically to all students in the selected class level, inviting them to join the meeting.
+                </div>
+                
+                <div class="mt-4">
+                    <!-- Zoom SDK Option -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="use_zoom_sdk" name="enable_sdk" checked>
+                        <label class="form-check-label" for="use_zoom_sdk">
+                            Enable Zoom SDK Integration
+                        </label>
+                        <div class="form-text">This allows students to join meetings directly in their browser without installing Zoom.</div>
+                    </div>
+                    
+                    <!-- Zoom OAuth Option -->
+                    <div class="mb-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Important: You need to connect your Zoom account to create meetings with all features.
+                            <div class="mt-2">
+                                <a href="{% url 'zoom_oauth_authorize' %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plug me-1"></i> Connect Zoom Account
+                                </a>
+                                <span class="ms-2">After connecting, return to this page.</span>
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="use_zoom_oauth" name="use_zoom_oauth" checked>
+                            <label class="form-check-label" for="use_zoom_oauth">
+                                Use your connected Zoom account
+                            </label>
+                            <div class="form-text">Create meetings using your own authorized Zoom account via OAuth.</div>
+                        </div>
+                    </div>
+                    
+                    <div id="oauth_info" class="alert alert-info mb-3" style="display: none;">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        <span id="oauth_status">Checking Zoom OAuth connection...</span>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-calendar-check me-2"></i>Schedule Class
+                    </button>
+                    <a href="{% url 'video_conferences_list' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                    <a href="{% url 'zoom_oauth_meetings' %}" class="btn btn-outline-primary ms-2" id="view_zoom_meetings" style="display: none;">
+                        <i class="fas fa-video me-2"></i>View Your Zoom Meetings
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tips Section -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for Scheduling Classes</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="mb-2">Meeting Setup Tips</h6>
+                    <ul class="mb-3">
+                        <li>Connect your Zoom account to create meetings automatically</li>
+                        <li>For other platforms, schedule your meeting first, then add the details here</li>
+                        <li>Make sure to set up appropriate security settings in your video platform</li>
+                        <li>Test your meeting link before sharing to ensure it works properly</li>
+                        <li>Schedule classes at least 24 hours in advance when possible</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="mb-2">Platform-Specific Guidance</h6>
+                    <ul>
+                        <li><strong>Zoom:</strong> Connect your account or provide both the meeting ID and password</li>
+                        <li><strong>Google Meet:</strong> The meeting code is the part after "meet.google.com/"</li>
+                        <li><strong>Microsoft Teams:</strong> Teams meetings only require the meeting link</li>
+                        <li>For all platforms, providing the direct meeting link is recommended</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="/static/js/video_conference.js"></script>
+<script>
+// Direct JavaScript to handle OAuth toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const useZoomOAuth = document.getElementById('use_zoom_oauth');
+    const manualMeetingFields = document.getElementById('manual_meeting_fields');
+    const oauthMeetingInfo = document.getElementById('oauth_meeting_info');
+    const platformSelect = document.getElementById('id_platform');
+    const enableParticipantSelection = document.getElementById('enable_participant_selection');
+    const participantSelectionArea = document.getElementById('participant_selection_area');
+    
+    // Handle participant selection toggle
+    if (enableParticipantSelection && participantSelectionArea) {
+        enableParticipantSelection.addEventListener('change', function() {
+            participantSelectionArea.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    if (useZoomOAuth && manualMeetingFields && oauthMeetingInfo) {
+        // Initial setup - hide/show based on current state
+        toggleFields();
+        
+        // Add direct event listener
+        useZoomOAuth.addEventListener('change', toggleFields);
+        
+        // Also check when platform changes
+        if (platformSelect) {
+            platformSelect.addEventListener('change', function() {
+                // If platform changed to Zoom, ensure fields toggle properly
+                if (platformSelect.value === 'zoom') {
+                    setTimeout(toggleFields, 100);
+                }
+            });
+        }
+    }
+    
+    function toggleFields() {
+        console.log("Toggle fields called", useZoomOAuth.checked);
+        if (platformSelect && platformSelect.value === 'zoom' && useZoomOAuth.checked) {
+            console.log("Hiding manual fields, showing OAuth info");
+            manualMeetingFields.style.display = 'none';
+            oauthMeetingInfo.style.display = 'block';
+            
+            // Make sure the form still submits with OAuth flag
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'use_zoom_oauth';
+            hiddenInput.value = 'on';
+            
+            // Remove any existing hidden inputs first
+            const existingInputs = document.querySelectorAll('input[name="use_zoom_oauth"][type="hidden"]');
+            existingInputs.forEach(input => input.remove());
+            
+            // Add the new hidden input to the form
+            document.querySelector('form').appendChild(hiddenInput);
+        } else {
+            console.log("Showing manual fields, hiding OAuth info");
+            manualMeetingFields.style.display = 'block';
+            oauthMeetingInfo.style.display = 'none';
+        }
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

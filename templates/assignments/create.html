@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Assignment - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-plus me-2"></i>Create Assignment</h2>
+        <a href="{% url 'assignments_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Assignments
+        </a>
+    </div>
+    
+    <!-- Create Assignment Form -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Assignment Details</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation assignment-form" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" id="{{ form.title.id_for_label }}" class="form-control {% if form.title.errors %}is-invalid{% endif %}" value="{{ form.title.value|default:'' }}" required>
+                        {% if form.title.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.title.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Choose a clear, descriptive title for your assignment</div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.subject.id_for_label }}" class="form-label">Subject <span class="text-danger">*</span></label>
+                        <select name="subject" id="{{ form.subject.id_for_label }}" class="form-select {% if form.subject.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in form.fields.subject.queryset %}
+                            <option value="{{ subject.id }}" {% if form.subject.value|stringformat:'i' == subject.id|stringformat:'i' %}selected{% endif %}>{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.subject.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.subject.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.class_level.id_for_label }}" class="form-label">Class Level <span class="text-danger">*</span></label>
+                        <select name="class_level" id="{{ form.class_level.id_for_label }}" class="form-select {% if form.class_level.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Class Level</option>
+                            {% for value, display in form.fields.class_level.choices %}
+                            <option value="{{ value }}" {% if form.class_level.value == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.class_level.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.class_level.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description <span class="text-danger">*</span></label>
+                        <textarea name="description" id="{{ form.description.id_for_label }}" class="form-control {% if form.description.errors %}is-invalid{% endif %}" rows="3" required>{{ form.description.value|default:'' }}</textarea>
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.description.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Brief overview of the assignment scope and objectives</div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="{{ form.instructions.id_for_label }}" class="form-label">Instructions <span class="text-danger">*</span></label>
+                        <textarea name="instructions" id="{{ form.instructions.id_for_label }}" class="form-control {% if form.instructions.errors %}is-invalid{% endif %}" rows="5" required>{{ form.instructions.value|default:'' }}</textarea>
+                        {% if form.instructions.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.instructions.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Detailed step-by-step instructions for completing the assignment</div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.difficulty.id_for_label }}" class="form-label">Difficulty Level <span class="text-danger">*</span></label>
+                        <select name="difficulty" id="{{ form.difficulty.id_for_label }}" class="form-select {% if form.difficulty.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select Difficulty</option>
+                            {% for value, display in form.fields.difficulty.choices %}
+                            <option value="{{ value }}" {% if form.difficulty.value == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.difficulty.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.difficulty.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.total_points.id_for_label }}" class="form-label">Total Points <span class="text-danger">*</span></label>
+                        <input type="number" name="total_points" id="{{ form.total_points.id_for_label }}" class="form-control {% if form.total_points.errors %}is-invalid{% endif %}" value="{{ form.total_points.value|default:'100' }}" min="1" max="1000" required>
+                        {% if form.total_points.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.total_points.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.due_date.id_for_label }}" class="form-label">Due Date <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="due_date" id="{{ form.due_date.id_for_label }}" class="form-control {% if form.due_date.errors %}is-invalid{% endif %}" value="{{ form.due_date.value|date:'Y-m-d\TH:i' }}" required>
+                        {% if form.due_date.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.due_date.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">When the assignment must be submitted by</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.attachment_url.id_for_label }}" class="form-label">Attachment URL</label>
+                        <input type="url" name="attachment_url" id="{{ form.attachment_url.id_for_label }}" class="form-control {% if form.attachment_url.errors %}is-invalid{% endif %}" value="{{ form.attachment_url.value|default:'' }}">
+                        {% if form.attachment_url.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.attachment_url.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Optional: URL to any file students need to complete the assignment</div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Create Assignment
+                    </button>
+                    <a href="{% url 'assignments_list' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tips Section -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for Creating Effective Assignments</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="mb-2">Writing Clear Instructions</h6>
+                    <ul class="mb-3">
+                        <li>Use simple, direct language</li>
+                        <li>Break down complex tasks into smaller steps</li>
+                        <li>Specify the format for submissions</li>
+                        <li>Indicate any specific requirements or constraints</li>
+                        <li>Include examples where possible</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="mb-2">Setting Appropriate Deadlines</h6>
+                    <ul>
+                        <li>Consider the complexity of the assignment</li>
+                        <li>Allow sufficient time for completion</li>
+                        <li>Avoid due dates that overlap with other major deadlines</li>
+                        <li>Set the due date during school days when possible</li>
+                        <li>Consider time zones if teaching students in different locations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

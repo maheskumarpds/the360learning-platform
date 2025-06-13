@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Remove Subject from Class | the360learning{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'class_subjects_list' %}">Class Subjects</a></li>
+            <li class="breadcrumb-item active">Remove Subject</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Remove Subject from Class</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning mb-4">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> You are about to remove a subject from a class level.
+                        This will affect all students in that class level. They will no longer have access
+                        to materials, assignments, and other content for this subject.
+                    </div>
+                    
+                    <div class="p-4 bg-light rounded mb-4">
+                        <h5>Confirmation Details</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Subject:</dt>
+                            <dd class="col-sm-8">
+                                <i class="fas fa-{{ class_subject.subject.icon }}"></i>
+                                {{ class_subject.subject.name }}
+                            </dd>
+                            
+                            <dt class="col-sm-4">Class Level:</dt>
+                            <dd class="col-sm-8">{{ class_subject.get_class_level_display }}</dd>
+                            
+                            <dt class="col-sm-4">Assigned By:</dt>
+                            <dd class="col-sm-8">{{ class_subject.assigned_by.username|default:"System" }}</dd>
+                            
+                            <dt class="col-sm-4">Assigned On:</dt>
+                            <dd class="col-sm-8">{{ class_subject.assigned_at|date:"F d, Y" }}</dd>
+                        </dl>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'class_subjects_list' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i> Confirm Removal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

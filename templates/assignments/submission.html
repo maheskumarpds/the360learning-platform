@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}Submit Assignment: {{ assignment.title }} - the360learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'assignments_list' %}">Assignments</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'assignment_detail' assignment.id %}">{{ assignment.title }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Submit</li>
+            </ol>
+        </nav>
+        <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Assignment
+        </a>
+    </div>
+    
+    <!-- Assignment Info -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">{{ assignment.title }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <span class="badge bg-primary me-2">{{ assignment.subject.name }}</span>
+                <span class="badge bg-secondary me-2">{{ assignment.class_level|class_level_display }}</span>
+                {% if assignment.difficulty == 'easy' %}
+                <span class="badge bg-success">Easy</span>
+                {% elif assignment.difficulty == 'medium' %}
+                <span class="badge bg-warning text-dark">Medium</span>
+                {% else %}
+                <span class="badge bg-danger">Hard</span>
+                {% endif %}
+                
+                <div class="ms-auto">
+                    <span class="badge bg-info">{{ assignment.total_points }} points</span>
+                </div>
+            </div>
+            
+            <div class="alert {% if assignment.is_past_due %}alert-danger{% else %}alert-primary{% endif %} d-flex align-items-center">
+                <div>
+                    <i class="fas {% if assignment.is_past_due %}fa-exclamation-circle{% else %}fa-clock{% endif %} me-2"></i>
+                </div>
+                <div>
+                    <strong>Due:</strong> {{ assignment.due_date|date:"F j, Y - g:i A" }}
+                    {% if assignment.is_past_due %}
+                    <span class="ms-2">(Past due - late submissions may receive reduced credit)</span>
+                    {% else %}
+                    <span class="ms-2">({{ assignment.due_date|time_until }})</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h5 class="mb-2">Description</h5>
+                <p>{{ assignment.description }}</p>
+            </div>
+            
+            <div class="mb-4">
+                <h5 class="mb-2">Instructions</h5>
+                <div>{{ assignment.instructions|linebreaks }}</div>
+            </div>
+            
+            {% if assignment.attachment_url %}
+            <div class="mb-4">
+                <h5 class="mb-2">Assignment Materials</h5>
+                <a href="{{ assignment.attachment_url }}" target="_blank" class="btn btn-outline-primary">
+                    <i class="fas fa-external-link-alt me-2"></i>View/Download Assignment Material
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Submission Form -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Your Submission</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation assignment-submit-form" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="mb-4">
+                    <label for="{{ form.submission_text.id_for_label }}" class="form-label">Submission Text <span class="text-danger">*</span></label>
+                    <textarea name="submission_text" id="{{ form.submission_text.id_for_label }}" class="form-control {% if form.submission_text.errors %}is-invalid{% endif %}" rows="8" required>{{ form.submission_text.value|default:'' }}</textarea>
+                    {% if form.submission_text.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.submission_text.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">Enter your assignment answer or explanation here. Be thorough and clear in your response.</div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="{{ form.attachment_url.id_for_label }}" class="form-label">Attachment URL</label>
+                    <input type="url" name="attachment_url" id="{{ form.attachment_url.id_for_label }}" class="form-control {% if form.attachment_url.errors %}is-invalid{% endif %}" value="{{ form.attachment_url.value|default:'' }}">
+                    {% if form.attachment_url.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.attachment_url.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        Optional: If your assignment includes files, upload them to Google Drive, Dropbox, or similar service and 
+                        provide the shareable link here.
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5>Important Notes</h5>
+                            <ul class="mb-0">
+                                <li>Once submitted, you cannot edit your submission.</li>
+                                <li>Make sure your attachment links are accessible to your teacher.</li>
+                                <li>Ensure you've completed all parts of the assignment before submitting.</li>
+                                {% if assignment.is_past_due %}
+                                <li class="text-danger">This assignment is past due. Late submissions may receive reduced credit.</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Assignment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .header {
+            background-color: #2d7d2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid #eee;
+        }
+        
+        .summary-box {
+            margin: 20px 0;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            width: 45%;
+            background-color: #e8f5e8;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4e73df;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .highlights {
+            margin: 20px 0;
+        }
+        
+        .highlight-item {
+            padding: 10px;
+            border-left: 3px solid #2d7d2f;
+            margin-bottom: 10px;
+            background-color: #f8f9fc;
+        }
+        
+        .areas-improvement {
+            margin: 20px 0;
+        }
+        
+        .button {
+            display: inline-block;
+            background-color: #2d7d2f;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Your Weekly Learning Summary</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ user.first_name|default:user.username }},</p>
+            
+            <p>Here's a summary of your learning activities and progress for the past week:</p>
+            
+            <!-- Stats Overview -->
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.materials_viewed }}</div>
+                    <div class="stat-label">Materials Viewed</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.assignments_completed }}</div>
+                    <div class="stat-label">Assignments Completed</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.classes_attended }}</div>
+                    <div class="stat-label">Classes Attended</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.study_hours }}</div>
+                    <div class="stat-label">Study Hours</div>
+                </div>
+            </div>
+            
+            <!-- Learning Highlights -->
+            <div class="highlights">
+                <h2>Learning Highlights</h2>
+                
+                {% if highlights.top_subjects %}
+                <h3>Top Subjects</h3>
+                {% for subject in highlights.top_subjects %}
+                <div class="highlight-item">
+                    <p><strong>{{ subject.name }}</strong> - {{ subject.hours }} hours spent</p>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                {% if highlights.recent_achievements %}
+                <h3>Recent Achievements</h3>
+                {% for achievement in highlights.recent_achievements %}
+                <div class="highlight-item">
+                    <p>{{ achievement }}</p>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            
+            <!-- Improvement Areas -->
+            {% if highlights.improvement_areas %}
+            <div class="areas-improvement">
+                <h2>Areas for Improvement</h2>
+                {% for area in highlights.improvement_areas %}
+                <div class="highlight-item">
+                    <p>{{ area.description }}</p>
+                    {% if area.suggestion %}
+                    <p><em>Suggestion: {{ area.suggestion }}</em></p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Upcoming Items -->
+            {% if highlights.upcoming_deadlines %}
+            <div class="summary-box">
+                <h2>Upcoming Deadlines</h2>
+                <ul>
+                {% for deadline in highlights.upcoming_deadlines %}
+                    <li>
+                        <strong>{{ deadline.title }}</strong> - Due {{ deadline.due_date }}
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <div style="text-align: center;">
+                <a href="http://example.com/dashboard" class="button">View Full Dashboard</a>
+            </div>
+            
+            <p>Keep up the great work!</p>
+            
+            <p>The the360learning Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message from the the360learning platform. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

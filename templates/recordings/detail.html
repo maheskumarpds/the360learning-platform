@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ recording.title }} - the360learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">{{ recording.title }}</h1>
+        <div>
+            {% if user.id == recording.uploaded_by.id or user_role == 'admin' %}
+            <a href="{% url 'recording_edit' recording_id=recording.id %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'recording_delete' recording_id=recording.id %}" class="btn btn-outline-danger me-2">
+                <i class="fas fa-trash-alt"></i> Delete
+            </a>
+            {% endif %}
+            <a href="{% url 'recordings_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Recordings
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <div class="video-container">
+                        <video id="recording-player" controls autoplay preload="auto">
+                            <source src="{{ streaming_url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4>About this Recording</h4>
+                    
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Subject:</strong> {{ recording.subject.name }}</p>
+                        <p class="mb-1"><strong>Class Level:</strong> {{ recording.get_class_level_display }}</p>
+                        <p class="mb-1"><strong>Duration:</strong> {{ recording.duration_minutes }} minutes</p>
+                        <p class="mb-1"><strong>Recorded Date:</strong> {{ recording.recorded_date }}</p>
+                        <p class="mb-1"><strong>Uploaded By:</strong> {{ recording.uploaded_by.username }}</p>
+                        <p class="mb-1"><strong>Total Views:</strong> {{ recording.views }}</p>
+                    </div>
+                    
+                    <h5>Description</h5>
+                    <div class="mb-3">
+                        {% if recording.description %}
+                        <p>{{ recording.description }}</p>
+                        {% else %}
+                        <p class="text-muted">No description available.</p>
+                        {% endif %}
+                    </div>
+
+                    {% if streaming_url %}
+                    <div class="d-grid gap-2">
+                        <a href="{{ streaming_url }}" download class="btn btn-outline-primary" target="_blank">
+                            <i class="fas fa-download me-2"></i> Download Recording
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Related Recordings -->
+            {% if related_recordings %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Related Recordings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for related in related_recordings %}
+                        <a href="{% url 'recording_detail' recording_id=related.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    {% if related.thumbnail_url %}
+                                    <img src="{{ related.thumbnail_url }}" class="rounded" width="80" height="45" alt="{{ related.title }}">
+                                    {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 45px;">
+                                        <i class="fas fa-video text-secondary"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="mb-1 text-truncate" style="max-width: 250px;">{{ related.title }}</h6>
+                                    <small class="text-muted">{{ related.duration_minutes }} min • {{ related.recorded_date }}</small>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Share Options -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Share This Recording</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="share-link" class="form-label">Recording Link</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="share-link" value="{{ request.build_absolute_uri }}" readonly>
+                            <button class="btn btn-outline-primary" type="button" id="copy-btn" onclick="copyShareLink()">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        <a href="mailto:?subject={{ recording.title }}&body=Check out this educational recording: {{ request.build_absolute_uri }}" class="btn btn-outline-secondary mx-1">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        <a href="https://wa.me/?text={{ recording.title }}%20-%20{{ request.build_absolute_uri }}" target="_blank" class="btn btn-outline-secondary mx-1">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="https://telegram.me/share/url?url={{ request.build_absolute_uri }}&text={{ recording.title }}" target="_blank" class="btn btn-outline-secondary mx-1">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .video-container {
+        aspect-ratio: 16 / 9;
+        background-color: #000;
+    }
+    
+    #recording-player {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-play is often blocked by browsers, but we'll try
+        const videoPlayer = document.getElementById('recording-player');
+        
+        // Track video views only when playback starts
+        videoPlayer.addEventListener('play', function() {
+            // View count is already incremented server-side
+            console.log('Video playback started');
+        });
+    });
+    
+    function copyShareLink() {
+        const shareLink = document.getElementById('share-link');
+        shareLink.select();
+        document.execCommand('copy');
+        
+        // Show feedback
+        const copyBtn = document.getElementById('copy-btn');
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+        
+        setTimeout(function() {
+            copyBtn.innerHTML = originalHTML;
+        }, 2000);
+    }
+</script>
+{% endblock %}

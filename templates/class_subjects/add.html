@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Subject to Class | the360learning{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'class_subjects_list' %}">Class Subjects</a></li>
+            <li class="breadcrumb-item active">Add Subject to Class</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-dark">Add Subject to Class</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Class-Subject Assignment</h5>
+                                <p class="mb-0">Assigning a subject to a class level makes all content for that subject available to students in that class. Students will only see content for subjects assigned to their class level.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.class_level.id_for_label }}" class="form-label">Class Level</label>
+                            <select name="{{ form.class_level.name }}" id="{{ form.class_level.id_for_label }}" class="form-select {% if form.class_level.errors %}is-invalid{% endif %}">
+                                <option value="" selected>Select a class level</option>
+                                {% for value, text in form.class_level.field.choices %}
+                                <option value="{{ value }}" {% if form.class_level.value == value %}selected{% endif %}>{{ text }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.class_level.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.class_level.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">The class level that will have access to this subject</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.subject.id_for_label }}" class="form-label">Subject</label>
+                            <div class="input-group mb-2">
+                                <select name="{{ form.subject.name }}" id="{{ form.subject.id_for_label }}" class="form-select {% if form.subject.errors %}is-invalid{% endif %}">
+                                    <option value="" selected>Select a subject</option>
+                                    {% for subject in form.subject.field.queryset %}
+                                    <option value="{{ subject.id }}" {% if form.subject.value == subject.id|stringformat:"i" %}selected{% endif %}>
+                                        {{ subject.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <a href="{% url 'subject_add' %}?next=class_subject_add" class="btn btn-outline-secondary">
+                                    <i class="fas fa-plus"></i> New Subject
+                                </a>
+                            </div>
+                            {% if form.subject.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.subject.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">The subject to be assigned to this class level</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'class_subjects_list' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Assignment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

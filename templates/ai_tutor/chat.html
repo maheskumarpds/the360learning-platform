@@ -1,0 +1,1622 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Tutor - the360learning{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/ai_tutor_enhancements.css">
+<style>
+/* Main layout styles for AI Learning Assistant */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ai-icon {
+    font-size: 24px;
+    margin-right: 15px;
+    color: #1976d2;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+}
+
+.header-buttons {
+    margin-left: auto;
+}
+
+.header-btn {
+    margin-left: 10px;
+}
+
+.main-content {
+    display: flex;
+    gap: 20px;
+}
+
+/* AI Tutor Chat */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fff;
+    overflow: visible;
+    min-height: 1200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.chat-header {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chat-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    min-height: 600px;
+    max-height: 800px;
+    background-color: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 200px;
+    margin: 20px 0;
+}
+
+.robot-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: #1976d2;
+}
+
+.welcome-message {
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+.welcome-message h3 {
+    margin-bottom: 15px;
+}
+
+.message {
+    margin-bottom: 20px;
+    display: flex;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f1f1f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.user-avatar {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.ai-avatar {
+    background-color: #1976d2;
+    color: white;
+}
+
+.message-content {
+    flex: 1;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.message.user .message-content {
+    background-color: #e3f2fd;
+}
+
+.chat-input {
+    padding: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.chat-form {
+    display: flex;
+}
+
+.chat-input-field {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: none;
+    min-height: 60px;
+}
+
+.send-button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-end;
+}
+
+.suggestion-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.suggestion-btn {
+    padding: 10px;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion-btn:hover {
+    background-color: #e3e3e3;
+}
+
+/* Practice Questions Section */
+.practice-questions {
+    width: 350px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fff;
+    overflow: hidden;
+    min-height: 800px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.practice-header {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+}
+
+.question-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #1976d2;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.practice-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.practice-form {
+    padding: 15px;
+}
+
+.practice-form .form-group {
+    margin-bottom: 15px;
+}
+
+.practice-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.practice-form input, .practice-form select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.practice-form .form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.practice-form .form-col {
+    flex: 1;
+}
+
+.generate-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.generate-btn i {
+    margin-right: 8px;
+}
+
+.questions-container {
+    padding: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.empty-questions {
+    text-align: center;
+    color: #777;
+    padding: 10px 0;
+}
+
+/* Typing indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    column-gap: 6px;
+    padding: 8px 0;
+}
+
+.typing-indicator span {
+    display: block;
+    width: 8px;
+    height: 8px;
+    background-color: #90a4ae;
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: typing 1.4s infinite both;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+    60% { transform: translateY(0); }
+    100% { transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .practice-questions {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="ai-icon">
+            <i class="fas fa-robot"></i>
+        </div>
+        <h1 class="page-title">AI Learning Assistant</h1>
+        
+        <!-- Subject Dropdown -->
+        <div class="subject-dropdown">
+            <select id="subjectSelector" class="form-select" onchange="updateSelectedSubject(this.value)">
+                <option value="">All Subjects</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}" {% if current_subject and current_subject.id == subject.id %}selected{% endif %}>
+                        {{ subject.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Difficulty Adjuster -->
+        <div class="difficulty-adjuster">
+            <label class="difficulty-label" for="difficultySlider">Difficulty:</label>
+            <input type="range" min="1" max="3" value="2" class="difficulty-slider" id="difficultySlider">
+        </div>
+        
+        <!-- Dark Mode Toggle -->
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch" for="darkModeToggle">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                </span>
+            </label>
+        </div>
+        
+        <div class="header-buttons">
+            <!-- Export Dropdown -->
+            <div class="export-dropdown">
+                <button class="btn btn-success header-btn export-btn">
+                    <i class="fas fa-download me-1"></i> Export
+                </button>
+                <div class="export-menu">
+                    <a href="#" id="exportPdf"><i class="fas fa-file-pdf me-2"></i> Save as PDF</a>
+                    <a href="#" id="exportText"><i class="fas fa-file-alt me-2"></i> Save as Text</a>
+                    <a href="#" id="printChat"><i class="fas fa-print me-2"></i> Print Chat</a>
+                    <a href="#" id="emailChat"><i class="fas fa-envelope me-2"></i> Email Chat</a>
+                </div>
+            </div>
+            
+            <a href="{% url 'ai_tutor_history' %}" class="btn btn-outline-primary header-btn">
+                <i class="fas fa-history me-1"></i> Chat History
+            </a>
+            <form method="post" action="{% url 'end_ai_session' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary header-btn">
+                    <i class="fas fa-sign-out-alt me-1"></i> End Session
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- AI Tutor Chat Section -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>AI Tutor Chat</h2>
+                
+                <!-- Subject Selection -->
+                <div class="subject-selection">
+                    <div class="subject-dropdown">
+                        <div class="subject-dropdown-btn" id="subjectDropdownBtn">
+                            <span>Select Subject</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="subject-dropdown-content">
+                            <div class="subject-option" data-subject="math">
+                                <i class="fas fa-calculator"></i> Mathematics
+                            </div>
+                            <div class="subject-option" data-subject="science">
+                                <i class="fas fa-flask"></i> Science
+                            </div>
+                            <div class="subject-option" data-subject="english">
+                                <i class="fas fa-book"></i> English
+                            </div>
+                            <div class="subject-option" data-subject="history">
+                                <i class="fas fa-landmark"></i> History
+                            </div>
+                            <div class="subject-option" data-subject="geography">
+                                <i class="fas fa-globe-americas"></i> Geography
+                            </div>
+                            <div class="subject-option" data-subject="computer-science">
+                                <i class="fas fa-laptop-code"></i> Computer Science
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feature Switches -->
+                <div class="feature-switches">
+                    <div class="feature-switch">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <label for="darkModeToggle">Dark Mode</label>
+                    </div>
+                    
+                    <div class="feature-switch">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="markdownToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <label for="markdownToggle">Markdown</label>
+                    </div>
+                    
+                    <div class="feature-switch">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="mobileOptimizedToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <label for="mobileOptimizedToggle">Mobile View</label>
+                    </div>
+                </div>
+                
+                <!-- Difficulty Slider -->
+                <div class="difficulty-control">
+                    <label for="difficultySlider" class="form-label">Difficulty Level:</label>
+                    <div class="difficulty-slider-container">
+                        <input type="range" class="difficulty-slider" id="difficultySlider" min="1" max="3" value="2">
+                        <div class="difficulty-labels">
+                            <span>Simple</span>
+                            <span>Medium</span>
+                            <span>Advanced</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Export Options -->
+                <div class="export-options">
+                    <button id="exportText" class="btn btn-sm btn-outline-secondary export-option">
+                        <i class="fas fa-file-alt"></i> Text
+                    </button>
+                    <button id="exportPdf" class="btn btn-sm btn-outline-secondary export-option">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button id="printChat" class="btn btn-sm btn-outline-secondary export-option">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button id="emailChat" class="btn btn-sm btn-outline-secondary export-option">
+                        <i class="fas fa-envelope"></i> Email
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chatMessages">
+                {% if not messages_history %}
+                    <div class="empty-state">
+                        <div class="robot-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="welcome-message">
+                            <h3>Hello! I'm your AI learning assistant.</h3>
+                            <p>Ask me any question related to your studies, and I'll do my best to help you understand the concepts.</p>
+                        </div>
+                    </div>
+                {% else %}
+                    {% for message in messages_history %}
+                        <div class="message {% if message.message_type == 'question' %}user{% else %}ai{% endif %}" 
+                             id="message-{{ message.id }}" 
+                             {% if message.parent_message_id %}data-parent-id="{{ message.parent_message_id }}"{% endif %}>
+                            <div class="message-avatar {% if message.message_type == 'question' %}user-avatar{% else %}ai-avatar{% endif %}">
+                                <i class="fas {% if message.message_type == 'question' %}fa-user{% else %}fa-robot{% endif %}"></i>
+                            </div>
+                            <div class="message-content">
+                                {{ message.content|linebreaks }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <!-- Chat Input Form -->
+            <div class="chat-input">
+                <form id="aiTutorForm" class="chat-form" method="post" action="{% url 'ajax_ai_chat' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Hidden input for subject -->
+                    <input type="hidden" name="subject" id="id_subject" value="{% if current_subject %}{{ current_subject.id }}{% endif %}">
+                    
+                    <!-- Voice Input Button -->
+                    <button type="button" class="voice-input-btn" id="voiceInputBtn">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    
+                    <textarea class="chat-input-field" name="question" id="id_question" placeholder="Ask your question here..."></textarea>
+                    <button type="button" class="send-button" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+                
+                {% if not messages_history %}
+                <div class="suggestion-btns">
+                    <button class="suggestion-btn" type="button">
+                        <i class="fas fa-lightbulb me-2"></i> Explain photosynthesis in simple terms
+                    </button>
+                    <button class="suggestion-btn" type="button">
+                        <i class="fas fa-calculator me-2"></i> Help me solve this equation: 2x² + 5x - 3 = 0
+                    </button>
+                    <button class="suggestion-btn" type="button">
+                        <i class="fas fa-book me-2"></i> What were the main causes of World War I?
+                    </button>
+                    <button class="suggestion-btn" type="button">
+                        <i class="fas fa-atom me-2"></i> Explain how atoms bond together
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Practice Questions Section -->
+        <div class="practice-questions">
+            <div class="practice-header">
+                <div class="question-icon">
+                    <i class="fas fa-question"></i>
+                </div>
+                <h2>Generate Practice Questions</h2>
+            </div>
+            
+            <div class="practice-form">
+                <form id="practiceQuestionsForm" action="javascript:void(0);">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="practiceQuestionTopic">Topic</label>
+                        <input type="text" id="practiceQuestionTopic" name="topic" placeholder="e.g., Photosynthesis, Quadratic Equations" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="practiceQuestionCount">Number of Questions</label>
+                            <select id="practiceQuestionCount" name="count">
+                                <option value="3" selected>3 Questions</option>
+                                <option value="5">5 Questions</option>
+                                <option value="10">10 Questions</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label for="practiceQuestionDifficulty">Difficulty</label>
+                            <select id="practiceQuestionDifficulty" name="difficulty">
+                                <option value="easy">Easy</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="generate-btn" id="generateQuestionsBtn">
+                        <i class="fas fa-cogs"></i> Generate Questions
+                    </button>
+                </form>
+            </div>
+            
+            <div class="questions-container" id="practiceQuestionsContainer">
+                <div class="empty-questions">
+                    <p>Enter a topic above to generate practice questions.</p>
+                </div>
+            </div>
+            
+            <!-- Related Concepts -->
+            <div class="related-concepts">
+                <h3><i class="fas fa-project-diagram me-2"></i> Related Concepts</h3>
+                <div class="concept-tags">
+                    <div class="concept-tag">Photosynthesis</div>
+                    <div class="concept-tag">Cellular Respiration</div>
+                    <div class="concept-tag">Carbon Cycle</div>
+                    <div class="concept-tag">Chloroplast</div>
+                    <div class="concept-tag">Light Energy</div>
+                </div>
+            </div>
+            
+            <!-- Progress Tracker -->
+            <div class="progress-tracker">
+                <h3><i class="fas fa-chart-line me-2"></i> Learning Progress</h3>
+                
+                <div class="topic-progress">
+                    <div class="topic-name">Biology</div>
+                    <div class="topic-bar">
+                        <div class="topic-fill" style="width: 75%"></div>
+                    </div>
+                    <div class="topic-percentage">75%</div>
+                </div>
+                
+                <div class="topic-progress">
+                    <div class="topic-name">Chemistry</div>
+                    <div class="topic-bar">
+                        <div class="topic-fill" style="width: 45%"></div>
+                    </div>
+                    <div class="topic-percentage">45%</div>
+                </div>
+                
+                <div class="topic-progress">
+                    <div class="topic-name">Physics</div>
+                    <div class="topic-bar">
+                        <div class="topic-fill" style="width: 30%"></div>
+                    </div>
+                    <div class="topic-percentage">30%</div>
+                </div>
+                
+                <div class="topic-progress">
+                    <div class="topic-name">Mathematics</div>
+                    <div class="topic-bar">
+                        <div class="topic-fill" style="width: 60%"></div>
+                    </div>
+                    <div class="topic-percentage">60%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add CSRF token for AJAX requests
+    const csrfToken = '{{ csrf_token }}';
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the chat container and form
+        const chatContainer = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('aiTutorForm');
+        const chatInput = document.getElementById('id_question');
+        const sendButton = document.getElementById('sendButton');
+        
+        // Scroll to bottom of chat
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Add click handler for the send button
+        if (sendButton) {
+            sendButton.addEventListener('click', function() {
+                // Manually trigger the form submission event
+                if (chatInput.value.trim() !== '') {
+                    const submitEvent = new Event('submit', {
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    chatForm.dispatchEvent(submitEvent);
+                }
+            });
+        }
+        
+        // Add keydown handler for Enter key
+        if (chatInput) {
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (chatInput.value.trim() !== '') {
+                        const submitEvent = new Event('submit', {
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        chatForm.dispatchEvent(submitEvent);
+                    }
+                }
+            });
+        }
+        
+        // Handle chat form submission with AJAX
+        if (chatForm) {
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent the default form submission
+                
+                const question = chatInput.value.trim();
+                if (!question) return;
+                
+                // Disable input and button while sending
+                chatInput.disabled = true;
+                sendButton.disabled = true;
+                
+                // Add user message to chat
+                const userMessageHTML = `
+                    <div class="message user">
+                        <div class="message-avatar user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="message-content">
+                            ${question}
+                        </div>
+                    </div>
+                `;
+                chatContainer.innerHTML += userMessageHTML;
+                
+                // Add typing indicator
+                const typingIndicatorHTML = `
+                    <div class="message ai" id="typing-indicator">
+                        <div class="message-avatar ai-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chatContainer.innerHTML += typingIndicatorHTML;
+                
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // Clear input
+                chatInput.value = '';
+                
+                // Prepare data
+                const formData = new FormData(chatForm);
+                
+                // Make sure the form is set up with the right action
+                if (chatForm.action !== '{% url "ajax_ai_chat" %}') {
+                    chatForm.action = '{% url "ajax_ai_chat" %}';
+                }
+                
+                // Send AJAX request
+                fetch('{% url "ajax_ai_chat" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Remove typing indicator
+                    const typingIndicator = document.getElementById('typing-indicator');
+                    if (typingIndicator) {
+                        typingIndicator.remove();
+                    }
+                    
+                    // Add AI response with feedback system and text-to-speech
+                    const messageId = Date.now(); // Create a unique ID for this message
+                    
+                    // Format response with markdown if enabled
+                    let formattedResponse = data.response;
+                    const markdownEnabled = document.getElementById('markdownToggle') && document.getElementById('markdownToggle').checked;
+                    
+                    if (markdownEnabled) {
+                        // Apply basic markdown formatting
+                        // Headers
+                        formattedResponse = formattedResponse.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+                        formattedResponse = formattedResponse.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+                        formattedResponse = formattedResponse.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+                        
+                        // Bold
+                        formattedResponse = formattedResponse.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+                        formattedResponse = formattedResponse.replace(/__(.*?)__/gim, '<strong>$1</strong>');
+                        
+                        // Italic
+                        formattedResponse = formattedResponse.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+                        formattedResponse = formattedResponse.replace(/_(.*?)_/gim, '<em>$1</em>');
+                        
+                        // Lists
+                        formattedResponse = formattedResponse.replace(/^\s*\d+\.\s+(.*$)/gim, '<li>$1</li>');
+                        formattedResponse = formattedResponse.replace(/^\s*\*\s+(.*$)/gim, '<li>$1</li>');
+                        formattedResponse = formattedResponse.replace(/^\s*-\s+(.*$)/gim, '<li>$1</li>');
+                        
+                        // Code
+                        formattedResponse = formattedResponse.replace(/`{3}([\s\S]*?)`{3}/gim, '<pre class="md-code-block">$1</pre>');
+                        formattedResponse = formattedResponse.replace(/`([^`]+)`/gim, '<code class="md-code">$1</code>');
+                        
+                        // Create paragraphs
+                        formattedResponse = formattedResponse.replace(/\n\s*\n/gim, '</p><p>');
+                        formattedResponse = '<p>' + formattedResponse + '</p>';
+                        
+                        // Wrap lists in <ul> or <ol>
+                        formattedResponse = formattedResponse.replace(/<li>.*?<\/li>/gim, match => {
+                            return '<ul>' + match + '</ul>';
+                        });
+                        
+                        // Clean up extra <ul> tags
+                        formattedResponse = formattedResponse.replace(/<\/ul><ul>/gim, '');
+                    }
+                    
+                    const aiMessageHTML = `
+                        <div class="message ai" id="message-${messageId}">
+                            <div class="message-avatar ai-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                ${formattedResponse}
+                                <button class="text-to-speech-btn" data-message-id="${messageId}" aria-label="Read aloud">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                                <div class="feedback-system">
+                                    <div class="feedback-question">Was this response helpful?</div>
+                                    <div class="feedback-buttons">
+                                        <button class="feedback-btn feedback-thumbs-up" data-message-id="${messageId}" data-feedback="helpful">
+                                            <i class="fas fa-thumbs-up"></i>
+                                        </button>
+                                        <button class="feedback-btn feedback-thumbs-down" data-message-id="${messageId}" data-feedback="not_helpful">
+                                            <i class="fas fa-thumbs-down"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    chatContainer.innerHTML += aiMessageHTML;
+                    
+                    // Scroll to bottom
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    
+                    // Update related concepts based on question and response
+                    updateRelatedConcepts(question, data.response);
+                    
+                    // Re-enable input and button
+                    chatInput.disabled = false;
+                    sendButton.disabled = false;
+                    chatInput.focus();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Remove typing indicator
+                    const typingIndicator = document.getElementById('typing-indicator');
+                    if (typingIndicator) {
+                        typingIndicator.remove();
+                    }
+                    
+                    // Add error message
+                    const errorMessageHTML = `
+                        <div class="message ai">
+                            <div class="message-avatar ai-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                Sorry, there was an error processing your request. Please try again.
+                            </div>
+                        </div>
+                    `;
+                    chatContainer.innerHTML += errorMessageHTML;
+                    
+                    // Scroll to bottom
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    
+                    // Re-enable input and button
+                    chatInput.disabled = false;
+                    sendButton.disabled = false;
+                    chatInput.focus();
+                });
+            });
+        }
+        
+        // Handle suggestion buttons
+        const suggestionBtns = document.querySelectorAll('.suggestion-btn');
+        if (suggestionBtns.length > 0 && chatInput) {
+            suggestionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Extract text without the icon
+                    const iconElement = this.querySelector('i');
+                    let btnText = this.textContent.trim();
+                    
+                    // Remove the icon text if present
+                    if (iconElement) {
+                        btnText = btnText.replace(iconElement.textContent.trim(), '').trim();
+                    }
+                    
+                    // Set input value
+                    chatInput.value = btnText;
+                    
+                    // Trigger form submission
+                    if (chatForm) {
+                        const submitEvent = new Event('submit', {
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        chatForm.dispatchEvent(submitEvent);
+                    }
+                });
+            });
+        }
+        
+        // Practice questions functionality
+        const generateQuestionsBtn = document.getElementById('generateQuestionsBtn');
+        const practiceQuestionsForm = document.getElementById('practiceQuestionsForm');
+        const practiceQuestionTopic = document.getElementById('practiceQuestionTopic');
+        const practiceQuestionCount = document.getElementById('practiceQuestionCount');
+        const practiceQuestionDifficulty = document.getElementById('practiceQuestionDifficulty');
+        const practiceQuestionsContainer = document.getElementById('practiceQuestionsContainer');
+        
+        if (generateQuestionsBtn && practiceQuestionsForm) {
+            generateQuestionsBtn.addEventListener('click', function() {
+                if (!practiceQuestionTopic.value.trim()) {
+                    alert('Please enter a topic');
+                    return;
+                }
+                
+                // Show loading state
+                generateQuestionsBtn.disabled = true;
+                generateQuestionsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                
+                // Prepare data
+                const data = {
+                    topic: practiceQuestionTopic.value.trim(),
+                    count: practiceQuestionCount.value,
+                    difficulty: practiceQuestionDifficulty.value,
+                };
+                
+                // Send request to generate questions
+                fetch('{% url "generate_practice_questions" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset button state
+                    generateQuestionsBtn.disabled = false;
+                    generateQuestionsBtn.innerHTML = '<i class="fas fa-cogs"></i> Generate Questions';
+                    
+                    // Process response
+                    if (data.questions && data.questions.length > 0) {
+                        // Clear previous questions
+                        practiceQuestionsContainer.innerHTML = '';
+                        
+                        // Add new questions
+                        const questionsHTML = document.createElement('div');
+                        questionsHTML.className = 'questions-list';
+                        
+                        data.questions.forEach((question, index) => {
+                            const questionElement = document.createElement('div');
+                            questionElement.className = 'question-item mb-3 p-3 border rounded';
+                            
+                            questionElement.innerHTML = `
+                                <div class="question-header d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0 fs-6">Question ${index + 1}</h5>
+                                    <span class="badge bg-${getDifficultyBadgeClass(question.difficulty)}">${question.difficulty}</span>
+                                </div>
+                                <p class="question-text mb-2">${question.question}</p>
+                                <div class="answer-container">
+                                    <button class="btn btn-sm btn-outline-primary show-answer-btn mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#answer${index}">
+                                        <i class="fas fa-eye me-1"></i> Show Answer
+                                    </button>
+                                    <div class="collapse" id="answer${index}">
+                                        <div class="card card-body bg-light">
+                                            ${question.answer}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            questionsHTML.appendChild(questionElement);
+                        });
+                        
+                        practiceQuestionsContainer.appendChild(questionsHTML);
+                        
+                        // Update related concepts based on topic
+                        updateRelatedConcepts(data.topic || practiceQuestionTopic.value.trim(), '');
+                    } else {
+                        // Show error
+                        practiceQuestionsContainer.innerHTML = `
+                            <div class="alert alert-danger">
+                                ${data.error || 'Error generating questions. Please try again.'}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    // Reset button state
+                    generateQuestionsBtn.disabled = false;
+                    generateQuestionsBtn.innerHTML = '<i class="fas fa-cogs"></i> Generate Questions';
+                    
+                    // Show error
+                    console.error('Error:', error);
+                    practiceQuestionsContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            Error connecting to the server. Please try again.
+                        </div>
+                    `;
+                });
+            });
+        }
+        
+        // Helper for badges
+        function getDifficultyBadgeClass(difficulty) {
+            switch(difficulty.toLowerCase()) {
+                case 'easy': return 'success';
+                case 'medium': return 'warning';
+                case 'hard': return 'danger';
+                default: return 'secondary';
+            }
+        }
+        
+        // =============== Enhanced Features Implementation ===============
+        
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (darkModeToggle) {
+            // Check for saved dark mode preference
+            const darkModePreference = localStorage.getItem('darkMode') === 'true';
+            if (darkModePreference) {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            // Toggle dark mode on change
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
+        }
+        
+        // Subject Selection
+        function updateSelectedSubject(subjectId) {
+            const subjectInput = document.querySelector('input[name="subject"]');
+            if (subjectInput) {
+                subjectInput.value = subjectId;
+            }
+        }
+        
+        // Custom subject dropdown handling
+        const subjectDropdownBtn = document.getElementById('subjectDropdownBtn');
+        const subjectDropdown = document.querySelector('.subject-dropdown');
+        const subjectOptions = document.querySelectorAll('.subject-option');
+        
+        if (subjectDropdownBtn && subjectDropdown) {
+            subjectDropdownBtn.addEventListener('click', function() {
+                subjectDropdown.classList.toggle('open');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!subjectDropdown.contains(e.target)) {
+                    subjectDropdown.classList.remove('open');
+                }
+            });
+            
+            // Handle subject selection
+            subjectOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const subjectId = this.getAttribute('data-subject');
+                    const subjectName = this.textContent.trim();
+                    
+                    // Update the button text
+                    const btnText = subjectDropdownBtn.querySelector('span');
+                    if (btnText) {
+                        btnText.textContent = subjectName;
+                    }
+                    
+                    // Update the hidden input
+                    updateSelectedSubject(subjectId);
+                    
+                    // Close the dropdown
+                    subjectDropdown.classList.remove('open');
+                });
+            });
+        }
+        
+        // Export Chat History
+        const exportPdf = document.getElementById('exportPdf');
+        const exportText = document.getElementById('exportText');
+        const printChat = document.getElementById('printChat');
+        const emailChat = document.getElementById('emailChat');
+        
+        if (exportPdf) {
+            exportPdf.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Generating PDF... This feature would save the chat as a PDF file.');
+                // In a real implementation, this would use a library like jsPDF to generate a PDF
+            });
+        }
+        
+        if (exportText) {
+            exportText.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Create text content from chat
+                const messages = document.querySelectorAll('.message');
+                let textContent = "";
+                
+                messages.forEach(message => {
+                    const isUser = message.classList.contains('user');
+                    const content = message.querySelector('.message-content').innerText.replace(/Was this response helpful\?.*/, '');
+                    
+                    textContent += `${isUser ? 'You' : 'AI Tutor'}: ${content}\n\n`;
+                });
+                
+                // Create a download link
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textContent));
+                element.setAttribute('download', `ai_tutor_chat_${new Date().toISOString().slice(0,10)}.txt`);
+                
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            });
+        }
+        
+        if (printChat) {
+            printChat.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.print();
+            });
+        }
+        
+        if (emailChat) {
+            emailChat.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('This feature would email the chat transcript to you.');
+                // In a real implementation, this would trigger an AJAX request to send an email
+            });
+        }
+        
+        // Voice Input Implementation
+        const voiceInputBtn = document.getElementById('voiceInputBtn');
+        if (voiceInputBtn && 'webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            let isListening = false;
+            
+            voiceInputBtn.addEventListener('click', function() {
+                if (!isListening) {
+                    // Start listening
+                    recognition.start();
+                    voiceInputBtn.classList.add('listening');
+                    isListening = true;
+                } else {
+                    // Stop listening
+                    recognition.stop();
+                    voiceInputBtn.classList.remove('listening');
+                    isListening = false;
+                }
+            });
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                chatInput.value = transcript;
+                voiceInputBtn.classList.remove('listening');
+                isListening = false;
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+                voiceInputBtn.classList.remove('listening');
+                isListening = false;
+            };
+            
+            recognition.onend = function() {
+                voiceInputBtn.classList.remove('listening');
+                isListening = false;
+            };
+        } else if (voiceInputBtn) {
+            // Hide button if speech recognition is not supported
+            voiceInputBtn.style.display = 'none';
+        }
+        
+        // Text-to-Speech Implementation
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.text-to-speech-btn')) {
+                const button = e.target.closest('.text-to-speech-btn');
+                const messageId = button.getAttribute('data-message-id');
+                const messageEl = document.getElementById(`message-${messageId}`);
+                const contentEl = messageEl.querySelector('.message-content');
+                
+                // Get text content (exclude feedback elements)
+                let textContent = contentEl.innerText;
+                textContent = textContent.replace('Was this response helpful?', '').trim();
+                
+                // Check if already speaking and toggle
+                if (button.classList.contains('speaking')) {
+                    window.speechSynthesis.cancel();
+                    button.classList.remove('speaking');
+                    return;
+                }
+                
+                // Speak the text
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(textContent);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 1.0;
+                    
+                    // Add speaking class to button
+                    button.classList.add('speaking');
+                    
+                    // Remove speaking class when done
+                    utterance.onend = function() {
+                        button.classList.remove('speaking');
+                    };
+                    
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+        });
+        
+        // Feedback System Implementation
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.feedback-btn')) {
+                const button = e.target.closest('.feedback-btn');
+                const messageId = button.getAttribute('data-message-id');
+                const feedbackType = button.getAttribute('data-feedback');
+                const feedbackSystem = button.closest('.feedback-system');
+                
+                // In a real implementation, send this feedback to the server
+                console.log(`Feedback for message ${messageId}: ${feedbackType}`);
+                
+                // Show thank you message
+                if (feedbackSystem) {
+                    feedbackSystem.innerHTML = '<div class="feedback-thank-you">Thank you for your feedback!</div>';
+                }
+            }
+        });
+        
+        // Difficulty Adjustment 
+        const difficultySlider = document.getElementById('difficultySlider');
+        if (difficultySlider) {
+            difficultySlider.addEventListener('input', function() {
+                // In a real implementation, this would be sent to the server to adjust AI responses
+                const difficultyLevel = parseInt(this.value);
+                let difficultyText;
+                
+                switch (difficultyLevel) {
+                    case 1:
+                        difficultyText = 'Simple';
+                        break;
+                    case 2: 
+                        difficultyText = 'Medium';
+                        break;
+                    case 3:
+                        difficultyText = 'Advanced';
+                        break;
+                    default:
+                        difficultyText = 'Medium';
+                }
+                
+                // Create or update tooltip
+                let tooltip = document.querySelector('.difficulty-tooltip');
+                if (!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.className = 'difficulty-tooltip';
+                    this.parentNode.appendChild(tooltip);
+                }
+                
+                tooltip.textContent = difficultyText;
+                tooltip.style.display = 'block';
+                
+                // Hide tooltip after 2 seconds
+                setTimeout(() => {
+                    tooltip.style.display = 'none';
+                }, 2000);
+            });
+        }
+        
+        // Mobile Optimization Toggle
+        const mobileOptimizedToggle = document.getElementById('mobileOptimizedToggle');
+        if (mobileOptimizedToggle) {
+            // Check for saved preference
+            const mobileOptimizedPreference = localStorage.getItem('mobileOptimized') === 'true';
+            if (mobileOptimizedPreference) {
+                document.body.classList.add('mobile-optimized');
+                mobileOptimizedToggle.checked = true;
+            }
+            
+            // Toggle mobile optimization on change
+            mobileOptimizedToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('mobile-optimized');
+                    localStorage.setItem('mobileOptimized', 'true');
+                } else {
+                    document.body.classList.remove('mobile-optimized');
+                    localStorage.setItem('mobileOptimized', 'false');
+                }
+            });
+            
+            // Auto-check on small screens
+            if (window.innerWidth < 768 && !mobileOptimizedPreference) {
+                mobileOptimizedToggle.checked = true;
+                document.body.classList.add('mobile-optimized');
+                localStorage.setItem('mobileOptimized', 'true');
+            }
+        }
+        
+        // Function to update related concepts based on question content
+        function updateRelatedConcepts(question, response) {
+            // In a real implementation, we would send the question to the server
+            // and get back a list of related concepts. For now, we'll simulate this.
+            
+            const relatedConceptsContainer = document.querySelector('.concept-tags');
+            if (!relatedConceptsContainer) return;
+            
+            // Extract keywords from question and response
+            const combinedText = question + ' ' + (response || '');
+            const keywords = extractKeywords(combinedText);
+            
+            // Generate updated related concepts HTML
+            let conceptsHTML = '';
+            keywords.forEach(keyword => {
+                conceptsHTML += `<div class="concept-tag">${keyword}</div>`;
+            });
+            
+            // Update the container
+            relatedConceptsContainer.innerHTML = conceptsHTML;
+            
+            // Make the tags clickable
+            document.querySelectorAll('.concept-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    const conceptText = this.textContent.trim();
+                    chatInput.value = `Tell me more about ${conceptText}`;
+                    chatForm.dispatchEvent(new Event('submit'));
+                });
+            });
+            
+            // Update progress tracking (in a real implementation, this would come from the server)
+            updateProgressTracking(keywords);
+        }
+        
+        // Helper function to extract keywords from text
+        function extractKeywords(text) {
+            // This is a very simple keyword extraction algorithm
+            // In a real implementation, we would use a more sophisticated approach
+            
+            // Predefined subject areas
+            const subjectKeywords = {
+                'biology': ['cell', 'organism', 'evolution', 'dna', 'photosynthesis', 'respiration'],
+                'chemistry': ['atom', 'molecule', 'reaction', 'compound', 'element', 'acid', 'base'],
+                'physics': ['force', 'energy', 'motion', 'gravity', 'wave', 'electricity', 'magnet'],
+                'mathematics': ['equation', 'algebra', 'geometry', 'calculus', 'function', 'number', 'probability']
+            };
+            
+            // Default keywords if none are found
+            const defaultKeywords = ['Learning', 'Education', 'Knowledge', 'Study', 'Concept'];
+            
+            // Lowercase the text for matching
+            const lowerText = text.toLowerCase();
+            
+            // Find matches from all subject areas
+            let matches = [];
+            for (const [subject, keywords] of Object.entries(subjectKeywords)) {
+                const subjectMatches = keywords.filter(keyword => lowerText.includes(keyword.toLowerCase()));
+                matches = [...matches, ...subjectMatches];
+            }
+            
+            // If no matches, use defaults with the subject name
+            if (matches.length === 0) {
+                // Look for subject names in the text
+                for (const subject of Object.keys(subjectKeywords)) {
+                    if (lowerText.includes(subject.toLowerCase())) {
+                        matches.push(subject);
+                        // Add a couple default keywords for this subject
+                        matches = [...matches, ...subjectKeywords[subject].slice(0, 3)];
+                        break;
+                    }
+                }
+                
+                // If still no matches, use default keywords
+                if (matches.length === 0) {
+                    matches = defaultKeywords;
+                }
+            }
+            
+            // Capitalize each keyword
+            return matches.map(keyword => keyword.charAt(0).toUpperCase() + keyword.slice(1)).slice(0, 5);
+        }
+        
+        // Function to update progress tracking
+        function updateProgressTracking(keywords) {
+            // In a real implementation, this data would come from the server
+            // For now, we'll just update the UI with mock data based on the keywords
+            
+            const biologyKeywords = ['cell', 'organism', 'evolution', 'dna', 'photosynthesis', 'respiration'];
+            const chemistryKeywords = ['atom', 'molecule', 'reaction', 'compound', 'element', 'acid', 'base'];
+            const physicsKeywords = ['force', 'energy', 'motion', 'gravity', 'wave', 'electricity', 'magnet'];
+            const mathKeywords = ['equation', 'algebra', 'geometry', 'calculus', 'function', 'number', 'probability'];
+            
+            // Count matches in each subject area
+            let subjectCounts = {
+                'Biology': 0,
+                'Chemistry': 0,
+                'Physics': 0,
+                'Mathematics': 0
+            };
+            
+            keywords.forEach(keyword => {
+                const lowerKeyword = keyword.toLowerCase();
+                if (biologyKeywords.includes(lowerKeyword)) subjectCounts['Biology']++;
+                if (chemistryKeywords.includes(lowerKeyword)) subjectCounts['Chemistry']++;
+                if (physicsKeywords.includes(lowerKeyword)) subjectCounts['Physics']++;
+                if (mathKeywords.includes(lowerKeyword)) subjectCounts['Mathematics']++;
+            });
+            
+            // Update progress bars (for demo purposes only - this would use real data in production)
+            for (const [subject, count] of Object.entries(subjectCounts)) {
+                if (count > 0) {
+                    const progressElement = document.querySelector(`.topic-name:contains('${subject}')`);
+                    if (progressElement) {
+                        const progressBar = progressElement.nextElementSibling.querySelector('.topic-fill');
+                        const percentageElement = progressElement.nextElementSibling.nextElementSibling;
+                        
+                        // Simulate progress increase
+                        let currentWidth = parseInt(progressBar.style.width) || 0;
+                        let newWidth = Math.min(currentWidth + 5, 100);
+                        
+                        progressBar.style.width = `${newWidth}%`;
+                        percentageElement.textContent = `${newWidth}%`;
+                    }
+                }
+            }
+        }
+        
+        // Add a guided learning path section (simulated for now)
+        function addGuidedLearningPath() {
+            const practiceQuestions = document.querySelector('.practice-questions');
+            if (!practiceQuestions) return;
+            
+            const learningPath = document.createElement('div');
+            learningPath.className = 'learning-path';
+            learningPath.innerHTML = `
+                <div class="learning-path-header">
+                    <i class="fas fa-road me-2"></i> Guided Learning Path
+                </div>
+                <div class="learning-path-steps">
+                    <div class="path-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Introduction to Photosynthesis</div>
+                            <div class="step-description">Learn the basics of how plants convert light to energy</div>
+                        </div>
+                        <div class="step-status complete">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="path-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Light-Dependent Reactions</div>
+                            <div class="step-description">Explore how light energy is captured by chlorophyll</div>
+                        </div>
+                        <div class="step-status current">
+                            <i class="fas fa-circle"></i>
+                        </div>
+                    </div>
+                    <div class="path-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Calvin Cycle Reactions</div>
+                            <div class="step-description">Understand how carbon dioxide is converted to sugar</div>
+                        </div>
+                        <div class="step-status incomplete">
+                            <i class="far fa-circle"></i>
+                        </div>
+                    </div>
+                    <div class="path-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">Factors Affecting Photosynthesis</div>
+                            <div class="step-description">Study the environmental factors that impact photosynthesis</div>
+                        </div>
+                        <div class="step-status incomplete">
+                            <i class="far fa-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Insert before the progress tracker
+            const progressTracker = document.querySelector('.progress-tracker');
+            if (progressTracker) {
+                progressTracker.parentNode.insertBefore(learningPath, progressTracker);
+            }
+        }
+        
+        // Call this function on page load to add the guided learning path
+        addGuidedLearningPath();
+        
+        // Add interactive exercise section
+        function addInteractiveExercise() {
+            const practiceQuestionsContainer = document.getElementById('practiceQuestionsContainer');
+            if (!practiceQuestionsContainer) return;
+            
+            const interactiveExercise = document.createElement('div');
+            interactiveExercise.className = 'interactive-exercise';
+            interactiveExercise.innerHTML = `
+                <div class="exercise-title">
+                    <i class="fas fa-puzzle-piece me-2"></i> Interactive Exercise
+                </div>
+                <p>Test your knowledge about photosynthesis:</p>
+                <div class="exercise-question">
+                    What is the primary pigment that absorbs light energy during photosynthesis?
+                </div>
+                <div class="exercise-options">
+                    <div class="exercise-option" data-value="A">A) Carotene</div>
+                    <div class="exercise-option" data-value="B">B) Chlorophyll</div>
+                    <div class="exercise-option" data-value="C">C) Melanin</div>
+                    <div class="exercise-option" data-value="D">D) Hemoglobin</div>
+                </div>
+                <div class="exercise-feedback"></div>
+                <button class="exercise-submit" disabled>Submit Answer</button>
+            `;
+            
+            // Add to the DOM above the empty questions div
+            const emptyQuestions = practiceQuestionsContainer.querySelector('.empty-questions');
+            if (emptyQuestions) {
+                practiceQuestionsContainer.insertBefore(interactiveExercise, emptyQuestions);
+                
+                // Add event listeners for the exercise
+                const options = interactiveExercise.querySelectorAll('.exercise-option');
+                const submitBtn = interactiveExercise.querySelector('.exercise-submit');
+                const feedbackEl = interactiveExercise.querySelector('.exercise-feedback');
+                
+                let selectedOption = null;
+                
+                options.forEach(option => {
+                    option.addEventListener('click', function() {
+                        // Deselect all options
+                        options.forEach(opt => opt.classList.remove('selected'));
+                        
+                        // Select this option
+                        this.classList.add('selected');
+                        selectedOption = this.getAttribute('data-value');
+                        
+                        // Enable submit button
+                        submitBtn.disabled = false;
+                    });
+                });
+                
+                submitBtn.addEventListener('click', function() {
+                    if (!selectedOption) return;
+                    
+                    // Check the answer (B is correct)
+                    const isCorrect = selectedOption === 'B';
+                    
+                    // Clear previous feedback
+                    options.forEach(opt => {
+                        opt.classList.remove('correct', 'incorrect');
+                    });
+                    
+                    // Highlight correct and incorrect answers
+                    options.forEach(opt => {
+                        const value = opt.getAttribute('data-value');
+                        if (value === 'B') {
+                            opt.classList.add('correct');
+                        } else if (value === selectedOption) {
+                            opt.classList.add('incorrect');
+                        }
+                    });
+                    
+                    // Show feedback
+                    feedbackEl.className = `exercise-feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+                    if (isCorrect) {
+                        feedbackEl.innerHTML = '<i class="fas fa-check-circle me-2"></i> Correct! Chlorophyll is the primary pigment that absorbs light energy.';
+                    } else {
+                        feedbackEl.innerHTML = '<i class="fas fa-times-circle me-2"></i> Incorrect. Chlorophyll is the correct answer.';
+                    }
+                    
+                    // Disable the submit button
+                    this.disabled = true;
+                });
+            }
+        }
+        
+        // Call this function to add the interactive exercise
+        addInteractiveExercise();
+    });
+</script>
+{% endblock %}

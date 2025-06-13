@@ -1,0 +1,597 @@
+{% extends 'base.html' %}
+
+{% block title %}the360learning - Your Educational Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom Styles for Home Page */
+    .hero-section {
+        background: linear-gradient(135deg, #2d7d2f 0%, #1f5521 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+        border-radius: 0 0 0 25%;
+    }
+    
+    .hero-animation {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 0;
+        opacity: 0.1;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .feature-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+        border: none;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        background-color: rgba(45, 125, 47, 0.1);
+        color: #2d7d2f;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .testimonial-card {
+        border-radius: 15px;
+        background-color: #f8f9fa;
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 30px 20px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
+    }
+    
+    .stat-icon {
+        font-size: 36px;
+        color: #2d7d2f;
+        margin-bottom: 15px;
+    }
+    
+    .subject-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .subject-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    
+    .subject-icon {
+        font-size: 36px;
+        margin-bottom: 15px;
+        color: #2d7d2f;
+    }
+    
+    .cta-section {
+        background: linear-gradient(135deg, #2d7d2f 0%, #1f5521 100%);
+        color: white;
+        border-radius: 25% 0 0 0;
+    }
+    
+    .btn-rounded {
+        border-radius: 30px;
+        padding: 12px 30px;
+    }
+    
+    .btn-glass {
+        background-color: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    
+    .btn-glass:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        color: white;
+    }
+    
+    .section-title {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title:after {
+        content: '';
+        position: absolute;
+        width: 50px;
+        height: 3px;
+        background-color: #2d7d2f;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .class-level-card {
+        border-radius: 10px;
+        border-left: 4px solid #2d7d2f;
+        transition: all 0.3s ease;
+    }
+    
+    .class-level-card:hover {
+        transform: translateX(10px);
+    }
+    
+    .floating-element {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5">
+    <div class="hero-animation">
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"></path>
+            <path d="M0,100 L100,0 L100,100 Z" fill="rgba(255,255,255,0.05)"></path>
+        </svg>
+    </div>
+    <div class="container py-5">
+        <div class="row align-items-center hero-content">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <span class="badge bg-light fw-bold px-3 py-2 mb-3" style="color: #2d7d2f;">Educational Platform</span>
+                <h1 class="display-4 fw-bold mb-4">The New Way to Learn <span class="d-block text-light">Anytime, Anywhere</span></h1>
+                <p class="fs-5 mb-5 opacity-75">the360learning is a comprehensive educational platform designed specifically for CBSE students and English Communication classes. Access study materials, attend virtual classes, complete assignments, and get AI-powered assistance.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg btn-rounded fw-bold">
+                        <i class="fas fa-user-plus me-2"></i>Get Started
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-glass btn-lg btn-rounded">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="position-relative floating-element">
+                    <img src="https://img.freepik.com/free-vector/online-learning-isometric-concept_1284-17947.jpg" class="img-fluid rounded-4" alt="Learning Platform Illustration" style="max-width: 80%;">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Section -->
+    <div class="container pb-5 pt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-lg mb-0" style="border-radius: 20px; transform: translateY(50px);">
+                    <div class="card-body px-4 py-5">
+                        <div class="row g-4 text-center">
+                            <div class="col-md-3 col-6">
+                                <div class="stat-card border-0">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <h2 class="fw-bold">5000+</h2>
+                                    <p class="text-muted mb-0">Active Students</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="stat-card border-0">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-book-open"></i>
+                                    </div>
+                                    <h2 class="fw-bold">1200+</h2>
+                                    <p class="text-muted mb-0">Study Materials</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="stat-card border-0">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    </div>
+                                    <h2 class="fw-bold">150+</h2>
+                                    <p class="text-muted mb-0">Expert Teachers</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="stat-card border-0">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <h2 class="fw-bold">98%</h2>
+                                    <p class="text-muted mb-0">Success Rate</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 mt-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary px-3 py-2 mb-2">Why Choose Us</span>
+            <h2 class="section-title fw-bold mb-4">Our Platform Features</h2>
+            <p class="text-muted col-lg-8 mx-auto">Designed to make education accessible, personalized, and effective for students of all ages and learning styles.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 feature-card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">User Management</h5>
+                        <p class="card-text text-muted">Customizable profiles for students and teachers with role-based access. Special classes for English Communication students.</p>
+                        <a href="{% url 'register' %}" class="style="color: #2d7d2f;" fw-semibold">Learn More <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 feature-card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Study Materials</h5>
+                        <p class="card-text text-muted">Access a wide range of educational resources organized by subject, class level, and file type. Download for offline learning.</p>
+                        <a href="{% url 'login' %}" class="style="color: #2d7d2f;" fw-semibold">Learn More <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 feature-card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">AI Learning Assistant</h5>
+                        <p class="card-text text-muted">Get personalized help from our AI tutor that adapts to your learning style and provides key points from complex topics.</p>
+                        <a href="{% url 'login' %}" class="style="color: #2d7d2f;" fw-semibold">Learn More <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 feature-card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Video Conferencing</h5>
+                        <p class="card-text text-muted">Attend live virtual classroom sessions with integrated Zoom, Google Meet, and Microsoft Teams support.</p>
+                        <a href="{% url 'login' %}" class="style="color: #2d7d2f;" fw-semibold">Learn More <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 feature-card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Assignments</h5>
+                        <p class="card-text text-muted">Complete assignments with detailed instructions, submit your work, and receive feedback from teachers.</p>
+                        <a href="{% url 'login' %}" class="style="color: #2d7d2f;" fw-semibold">Learn More <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 feature-card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Recordings Library</h5>
+                        <p class="card-text text-muted">Access a searchable database of past class recordings organized by subject and class level.</p>
+                        <a href="{% url 'login' %}" class="style="color: #2d7d2f;" fw-semibold">Learn More <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Subjects Section -->
+<section class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary px-3 py-2 mb-2">Academic Areas</span>
+            <h2 class="section-title fw-bold mb-4">Subjects We Cover</h2>
+            <p class="text-muted col-lg-8 mx-auto">Comprehensive learning materials for all CBSE subjects, tailored for each class level.</p>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            {% for subject in subjects %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 border-0 shadow-sm text-center subject-card">
+                    <div class="card-body p-4">
+                        <div class="subject-icon">
+                            <i class="fas {{ subject.icon|default:'fa-book' }}"></i>
+                        </div>
+                        <h6 class="card-title fw-bold">{{ subject.name }}</h6>
+                        <span class="badge bg-light style="color: #2d7d2f;"">100+ Materials</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Subjects will be displayed here once added by administrators.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Testimonial Section -->
+<section class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary px-3 py-2 mb-2">Success Stories</span>
+            <h2 class="section-title fw-bold mb-4">What Our Students Say</h2>
+            <p class="text-muted col-lg-8 mx-auto">Here's what some of our students have to say about their learning experience.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm testimonial-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="me-3">
+                                <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Student" class="rounded-circle" width="60" height="60">
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Priya Sharma</h6>
+                                <p class="mb-0 small text-muted">Class 10 Student</p>
+                            </div>
+                        </div>
+                        <p class="card-text">"The AI tutor has been incredibly helpful for my studies. I can ask questions anytime and get clear explanations that help me understand difficult concepts."</p>
+                        <div class="text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm testimonial-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="me-3">
+                                <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="Student" class="rounded-circle" width="60" height="60">
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Rahul Verma</h6>
+                                <p class="mb-0 small text-muted">Class 12 Student</p>
+                            </div>
+                        </div>
+                        <p class="card-text">"The video conferencing feature has made remote learning so much easier. The recorded sessions are great for revision, especially before exams."</p>
+                        <div class="text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm testimonial-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="me-3">
+                                <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Student" class="rounded-circle" width="60" height="60">
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Ananya Patel</h6>
+                                <p class="mb-0 small text-muted">English Communication Student</p>
+                            </div>
+                        </div>
+                        <p class="card-text">"As an English Communication student, I love how the platform offers tailored resources. My speaking and writing skills have improved significantly."</p>
+                        <div class="text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Class Levels Section -->
+<section class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary px-3 py-2 mb-2">All Levels</span>
+            <h2 class="section-title fw-bold mb-4">Class Levels</h2>
+            <p class="text-muted col-lg-8 mx-auto">Content tailored for each class level with age-appropriate materials and teaching methods.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card class-level-card shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3 bg-primary bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-graduation-cap fs-3 style="color: #2d7d2f;""></i>
+                            </div>
+                            <h5 class="card-title mb-0 fw-bold">Elementary (Classes 1-5)</h5>
+                        </div>
+                        <p class="card-text text-muted">Interactive learning materials and activities designed for young learners to build a strong foundation in core subjects.</p>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <span class="badge bg-light style="color: #2d7d2f;"">Interactive Learning</span>
+                            <span class="badge bg-light style="color: #2d7d2f;"">Visual Aids</span>
+                            <span class="badge bg-light style="color: #2d7d2f;"">Fun Activities</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card class-level-card shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3 bg-primary bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-book-reader fs-3 style="color: #2d7d2f;""></i>
+                            </div>
+                            <h5 class="card-title mb-0 fw-bold">Middle School (Classes 6-8)</h5>
+                        </div>
+                        <p class="card-text text-muted">Comprehensive resources to help students develop critical thinking and analytical skills as they advance in their academic journey.</p>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <span class="badge bg-light style="color: #2d7d2f;"">Critical Thinking</span>
+                            <span class="badge bg-light style="color: #2d7d2f;"">Project-Based</span>
+                            <span class="badge bg-light style="color: #2d7d2f;"">Group Activities</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card class-level-card shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3 bg-primary bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-user-graduate fs-3 style="color: #2d7d2f;""></i>
+                            </div>
+                            <h5 class="card-title mb-0 fw-bold">High School (Classes 9-10)</h5>
+                        </div>
+                        <p class="card-text text-muted">In-depth content and practice materials to prepare students for board examinations with focus on conceptual clarity and application.</p>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <span class="badge bg-light style="color: #2d7d2f;"">Exam Preparation</span>
+                            <span class="badge bg-light style="color: #2d7d2f;"">Practice Tests</span>
+                            <span class="badge bg-light style="color: #2d7d2f;"">Concept Mastery</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card class-level-card shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3 bg-primary bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-university fs-3 style="color: #2d7d2f;""></i>
+                            </div>
+                            <h5 class="card-title mb-0 fw-bold">Senior Secondary (Classes 11-12)</h5>
+                        </div>
+                        <p class="card-text text-muted">Advanced study materials and resources focusing on specialized subjects and career preparation with college readiness.</p>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <span class="badge bg-light style="color: #2d7d2f;"">Advanced Topics</span>
+                            <span class="badge bg-light style="color: #2d7d2f;"">Career Guidance</span>
+                            <span class="badge bg-light style="color: #2d7d2f;"">Entrance Exams</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-body p-0">
+                        <div class="row g-0">
+                            <div class="col-md-4 bg-primary text-white d-flex align-items-center">
+                                <div class="p-4 p-lg-5">
+                                    <h4 class="fw-bold mb-3"><i class="fas fa-comments me-2"></i>English Communication Class</h4>
+                                    <p class="mb-4">Dedicated resources for students focusing on English language skills, communication techniques, and practical language applications.</p>
+                                    <a href="{% url 'register' %}" class="btn btn-light btn-rounded">
+                                        <i class="fas fa-arrow-right me-2"></i>Join Now
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="p-4 p-lg-5">
+                                    <h5 class="fw-bold mb-4">What You'll Learn</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2"><i class="fas fa-check-circle style="color: #2d7d2f;" me-2"></i>Business Communication</li>
+                                                <li class="mb-2"><i class="fas fa-check-circle style="color: #2d7d2f;" me-2"></i>Public Speaking</li>
+                                                <li class="mb-2"><i class="fas fa-check-circle style="color: #2d7d2f;" me-2"></i>Writing Skills</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2"><i class="fas fa-check-circle style="color: #2d7d2f;" me-2"></i>Vocabulary Building</li>
+                                                <li class="mb-2"><i class="fas fa-check-circle style="color: #2d7d2f;" me-2"></i>Pronunciation</li>
+                                                <li class="mb-2"><i class="fas fa-check-circle style="color: #2d7d2f;" me-2"></i>Interview Skills</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="display-5 fw-bold mb-4">Ready to Transform Your Learning Experience?</h2>
+                <p class="lead mb-5 opacity-75">Join the360learning today and access a world of educational resources designed specifically for CBSE students.</p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg btn-rounded fw-bold">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-glass btn-lg btn-rounded">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

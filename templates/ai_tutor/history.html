@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}AI Tutor History - the360learning{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/ai_tutor.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid g-0">
+    <!-- Mobile sidebar toggle button -->
+    <button type="button" class="mobile-sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- ChatGPT-like Layout -->
+    <div class="chatgpt-layout">
+        <!-- Left Sidebar -->
+        <div class="chat-sidebar">
+            <div class="sidebar-header">
+                <a href="{% url 'ai_tutor_chat' %}" class="new-chat-button text-decoration-none">
+                    <span><i class="fas fa-plus me-2"></i> New chat</span>
+                    <i class="fas fa-pen-square"></i>
+                </a>
+            </div>
+            
+            <div class="sidebar-scroll">
+                <ul class="chat-history-list">
+                    {% if past_sessions %}
+                        {% for past_session in past_sessions %}
+                            <li class="chat-history-item {% if session.id == past_session.id %}active{% endif %}">
+                                <a href="{% url 'ai_tutor_history_session' past_session.id %}" class="d-flex text-decoration-none w-100 text-white">
+                                    <i class="fas fa-message"></i>
+                                    <span>{{ past_session.started_at|date:"M d, Y" }} Chat</span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="chat-history-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>No previous chats</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile-button">
+                    <div class="user-avatar-sidebar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-name">
+                        {{ user.first_name }} {{ user.last_name }}
+                    </div>
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Chat Area -->
+        <div class="chatgpt-container">
+            <!-- Chat Messages -->
+            <div class="chat-container" id="chatMessages">
+                {% if not session %}
+                <div class="empty-state-container">
+                    <div class="robot-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Select a conversation from the sidebar</h3>
+                    <p>You can view your past AI tutor conversations or start a new one.</p>
+                </div>
+                {% elif not messages_history %}
+                <div class="empty-state-container">
+                    <div class="robot-icon">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <h3>No messages in this conversation</h3>
+                    <p>This chat session is empty.</p>
+                </div>
+                {% else %}
+                    {% for message in messages_history %}
+                    <div class="chat-message {% if message.message_type == 'question' %}chat-question{% else %}chat-answer{% endif %}">
+                        <div class="message-with-avatar">
+                            {% if message.message_type == 'question' %}
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% else %}
+                                <div class="ai-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                            {% endif %}
+                            <div class="message-content">
+                                {{ message.content|linebreaks }}
+                                <span class="chat-timestamp">{{ message.timestamp|time:"h:i A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Keyboard Shortcuts Button -->
+    <button type="button" class="keyboard-shortcuts-button" id="keyboardShortcutsBtn" aria-label="Keyboard shortcuts">
+        <i class="fas fa-keyboard"></i>
+    </button>
+    
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="keyboard-shortcuts-modal" id="keyboardShortcutsModal">
+        <div class="keyboard-shortcuts-content">
+            <div class="keyboard-shortcuts-header">
+                <h3>Keyboard shortcuts</h3>
+                <button type="button" class="keyboard-shortcuts-close" id="keyboardShortcutsClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="keyboard-shortcuts-body">
+                <div class="shortcut-item">
+                    <div class="shortcut-description">Focus on chat input</div>
+                    <div class="shortcut-keys">
+                        <div class="key">/</div>
+                    </div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-description">Close sidebar on mobile</div>
+                    <div class="shortcut-keys">
+                        <div class="key">Esc</div>
+                    </div>
+                </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-description">Scroll to bottom of chat</div>
+                    <div class="shortcut-keys">
+                        <div class="key">End</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Scroll to the bottom of chat container
+        let chatContainer = document.getElementById('chatMessages');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}
